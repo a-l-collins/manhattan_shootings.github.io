@@ -408,7 +408,7 @@ As we can see from a p-value of `r round(pull(calendar_test, p.value))`, which i
 Do shooting rates differ between months?
 
 ```{r seasons_months}
-plot_daylight_month <- daylight_shooting %>%
+plot_daylight_month <- shooting %>%
   mutate(
     month = as.factor(month),
     month = fct_relevel(month, c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))) %>%
@@ -455,20 +455,10 @@ weather <- weather %>%
   select(name, month, day, year, prcp, prcp_attributes, tmax, tmin, latitude, longitude)
 
 # Merging weather and shooting
-weather_shooting <- left_join(weather, shooting, by = c("month", "day", "year")) %>% 
-  group_by(year, month, day) %>% 
-  slice_head() %>% 
-  ungroup() %>% 
-  mutate(
-    shooting = incident_key > 0,
-    shooting = case_match(shooting,
-                          TRUE ~ "Incident",
-                          NA ~ "No Incident")
-  )
+weather_shooting <- left_join(shooting, weather, by = c("month", "day", "year"))
 
 # Plot
 plot_temp_shoot_hist <- weather_shooting %>% 
-  drop_na(incident_key) %>% 
   mutate(tmax = tmax / 10) %>% 
   ggplot(aes(x = tmax)) +
   geom_histogram(fill = "violetred4") +

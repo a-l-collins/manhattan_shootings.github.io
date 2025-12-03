@@ -1,26 +1,359 @@
 ---
 title: "Data Processing"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ### **Libraries**
 
-```{r}
-# add all libraries used here
+```{r message = FALSE, eval = FALSE}
+library(tidyverse)
+library(rvest)
+library(httr)
+
+# add any other libraries used
 ```
 
 ### **Shooting Data**
 
+#### *The Data*
+
 [description of data]
 
-[description of cleaning process]
+#### *Cleaning the Data*
 
-```{r}
-# code used in cleaning here
+The shooting data was available in a historical (2006-2024) format, and a 2025 format. We changed the `statistical_murder_flag` designations in the 2025 variant of the data to match the historical data before binding the two datasets together. We also made sure to only include Manhattan incidents, and ensured that each incident key within `incident_key` only occurred once, to remove repeat inputs (to account for multiple victims or perpetrators) and prevent them from skewing the data.
+
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+# THIS IS BASED ON AINSEL'S PROCESS. Look it over and see if your process agrees; if it doesn't, text or something so we can work it out
+shooting_h <- read_csv("./Data Folder/Shooting_Historic.csv") %>% 
+  janitor::clean_names()
+
+shooting_2025 <- read_csv("./Data Folder/Shooting_2025.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(statistical_murder_flag = case_match(statistical_murder_flag,
+                                             "N" ~ FALSE,
+                                             "Y" ~ TRUE))
+
+shooting <- bind_rows(shooting_2025, shooting_h) %>% 
+  separate_wider_delim(occur_date, delim = "/", names_sep = ".") %>% 
+  rename(
+    month = occur_date.1,
+    day = occur_date.2,
+    year = occur_date.3,
+    time = occur_time
+  ) %>% 
+  mutate(
+    month = case_match(month,
+      "01" ~ "January",
+      "02" ~ "February",
+      "03" ~ "March",
+      "04" ~ "April",
+      "05" ~ "May",
+      "06" ~ "June",
+      "07" ~ "July",
+      "08" ~ "August",
+      "09" ~ "September",
+      "10" ~ "October",
+      "11" ~ "November",
+      "12" ~ "December"),
+    day = as.numeric(day),
+    year = as.numeric(year)) %>% 
+  distinct(incident_key, .keep_all = TRUE) %>% 
+  filter(boro == "MANHATTAN")
 ```
 
 ### **Time Data**
 
-[ainsel: add all data cleaning & merging steps, + descriptions, here]
+#### *Daylight Data*
 
-if anyone else used any other data, add your sections in here as well
+Data on when sunrise and sunset occurs for each day of the year was pulled from (New York City Photo Safari)[https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html]. It was scraped from the website a single time before being saved in a table, and that table was used for subsequent analysis. This data was then cleaned, merged with the shooting data created above, the sunrise/sunset/time variables cleaned so they both match and are in a 24-hour format, and a `daylight` variable was created to indicate whether each individual shooting occurred within its date's provided sunrise/sunset times or not.
+
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+# Ran once to pull table from website:
+# url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
+
+# daylight <- read_html(url) %>% 
+  # html_table() %>% 
+  # as.data.frame() %>% 
+  # janitor::clean_names()
+
+# write.table(daylight, file = "./Data Folder/Daylight_Hours.txt", quote = F, row.names = F, col.names = T, sep = "\t")
+
+daylight <- read.table("./Data Folder/Daylight_Hours.txt", header = T, sep = '\t') %>% 
+  rename(day = var_1) %>% 
+  pivot_longer(
+    jan:dec,
+    names_to = "month",
+    values_to = "time"
+  ) %>% 
+  separate_wider_delim(time, delim = "/", names_sep = "_") %>% 
+  rename(
+    sunrise = time_1,
+    sunset = time_2
+  ) %>% 
+  mutate(
+    month = case_match(month,
+      "jan" ~ "January",
+      "feb" ~ "February",
+      "mar" ~ "March",
+      "apr" ~ "April",
+      "may" ~ "May",
+      "jun" ~ "June",
+      "jul" ~ "July",
+      "aug" ~ "August",
+      "sep" ~ "September",
+      "oct" ~ "October",
+      "nov" ~ "November",
+      "dec" ~ "December")
+    )
+
+# Creates a variable for day/night
+daylight_shooting <- left_join(shooting, daylight, by = c("month", "day")) %>%
+  separate_wider_delim(time, delim = ":", names_sep = "_") %>% 
+  separate_wider_delim(sunrise:sunset, delim = ":", names_sep = "_") %>% 
+  rename(
+    hour = time_1,
+    minute = time_2,
+    sunrise_hour = sunrise_1,
+    sunrise_minute = sunrise_2,
+    sunset_hour = sunset_1,
+    sunset_minute = sunset_2
+  ) %>% 
+  select(-time_3) %>% 
+  mutate(
+    hour = as.numeric(hour),
+    minute = as.numeric(minute),
+    
+    sunrise_minute = as.numeric(sunrise_minute),
+    sunrise_hour = as.numeric(sunrise_hour),
+    
+    sunset_minute = na_if(sunset_minute, ""),
+    sunset_minute = as.numeric(sunset_minute),
+    sunset_minute = replace_na(sunset_minute, 0),
+    sunset_hour = as.numeric(sunset_hour),
+    sunset_hour = sunset_hour + 12,
+    
+    daylight = case_when(
+      hour > sunrise_hour & hour < sunset_hour ~ TRUE,
+      hour == sunrise_hour & minute >= sunrise_minute ~ TRUE,
+      hour == sunset_hour & minute <= sunset_minute ~ TRUE
+    ),
+    daylight = case_match(daylight,
+      TRUE ~ "Daytime",
+      NA ~ "Nighttime"
+    )
+  ) %>% 
+  select(incident_key, month, day, year, hour, minute, sunrise_hour, sunrise_minute, sunset_hour, sunset_minute, daylight, everything())
+```
+
+#### *Day of the Week Data*
+
+Calendars for 2006-2025 were downloaded and added to a single excel workbook from (General Blue)[https://www.generalblue.com/calendar].
+
+The following functions were created in order to read all calendars into a single dataframe:
+
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+#' Read in calendar
+#'
+#' @param year Relevant sheet name
+#' @param range Range for the relevant month
+#'
+#' @returns Formatted month dates for the provided year and month
+read_calendar = function(year, month, range) {
+  sheet_name = as.character(year)
+  range = as.character(range)
+  month = as.character(month)
+  
+  func_cal <- readxl::read_xlsx("./Data Folder/Calendar_AllYears.xlsx", range = range, sheet = sheet_name) %>% 
+    janitor::clean_names() %>% 
+    rename(
+      Sunday = s_1,
+      Monday = m,
+      Tuesday = t_3,
+      Wednesday = w,
+      Thursday = t_5,
+      Friday = f,
+      Saturday = s_7
+    ) %>% 
+    pivot_longer(
+      Sunday:Saturday,
+      names_to = "day_of_week",
+      values_to = "day"
+    ) %>% 
+    drop_na(day) %>% 
+    mutate(
+      month = month,
+      year = year
+    )
+  
+  func_cal
+}
+
+#' Create a yearly calendar
+#'
+#' @param year Relevant sheet name
+#'
+#' @returns Full calendar for the provided year
+create_yearly_calendar = function(year) {
+  year = as.character(year)
+  
+  func_cal <- bind_rows(
+    read_calendar(year = year, month = "January", range = "A3:G9"),
+    read_calendar(year = year, month = "February", range = "I3:O9"),
+    read_calendar(year = year, month = "March", range = "Q3:W9"),
+    read_calendar(year = year, month = "April", range = "A12:G18"),
+    read_calendar(year = year, month = "May", range = "I12:O18"),
+    read_calendar(year = year, month = "June", range = "Q12:W18"),
+    read_calendar(year = year, month = "July", range = "A21:G27"),
+    read_calendar(year = year, month = "August", range = "I21:O27"),
+    read_calendar(year = year, month = "September", range = "Q21:W27"),
+    read_calendar(year = year, month = "October", range = "A30:G36"),
+    read_calendar(year = year, month = "November", range = "I30:O36"),
+    read_calendar(year = year, month = "December", range = "Q30:W36")
+  )
+}
+
+#' Create a calendar with all provided years
+#'
+#' @param year_list Relevant sheet names
+#'
+#' @returns A calendar with all years from indicated sheets
+create_full_calendar = function(year_list) {
+  output <- tibble(
+    day_of_week = NA,
+    day = NA,
+    month = NA,
+    year = NA
+  )
+  
+  for (i in 1:length(year_list)) {
+    output <- bind_rows(
+      output,
+      create_yearly_calendar(year_list[[i]])
+    )
+  }
+  
+  output <- output %>% drop_na(day)
+}
+```
+
+After having been read in, calendar data was merged with shooting data and a variable was created to indicate whether or not the day of week for each specific incident occured on the weekend or not.
+
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+calendar <- create_full_calendar(2006:2025) %>% 
+  mutate(
+    day = as.numeric(day),
+    year = as.numeric(year)
+  )
+
+# Merge with shootings:
+calendar_shooting <- left_join(shooting, calendar, by = c("month", "day", "year")) %>% 
+  mutate(
+    weekend = case_when(
+      day_of_week == "Sunday" ~ TRUE,
+      day_of_week == "Saturday" ~ TRUE
+    ),
+    weekend = case_match(weekend,
+      TRUE ~ "Weekend",
+      NA ~ "Weekday"
+    ),
+    day_of_week = as.factor(day_of_week),
+    day_of_week = fct_relevel(day_of_week, c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+  )
+```
+
+#### *Weather Data*
+
+Weather data from the (NOAA)[https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html] was used to measure the temperature for when shootings occurred. The date variable was altered to match the date variable in the shooting data, only temperature, precipitation, and location data was kept, and the weather data was merged into the shooting data to provide that weather data for each shooting incident.
+
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+weather <- weather %>% 
+  separate_wider_delim(date, delim = "-", names_sep = "_") %>% 
+  rename(
+    year = date_1,
+    month = date_2,
+    day = date_3
+  ) %>% 
+  mutate(
+    month = case_match(month,
+      "01" ~ "January",
+      "02" ~ "February",
+      "03" ~ "March",
+      "04" ~ "April",
+      "05" ~ "May",
+      "06" ~ "June",
+      "07" ~ "July",
+      "08" ~ "August",
+      "09" ~ "September",
+      "10" ~ "October",
+      "11" ~ "November",
+      "12" ~ "December"),
+    day = as.numeric(day),
+    year = as.numeric(year)) %>% 
+  filter(year >= 2006) %>% 
+  select(name, month, day, year, prcp, prcp_attributes, tmax, tmin, latitude, longitude)
+
+# Merging weather and shooting
+weather_shooting <- left_join(weather, shooting, by = c("month", "day", "year"))
+```
+
+#### *COVID-19 Pandemic Data*
+
+The COVID-19 Pandemic timeline is based on when WHO declared the beginning (March 11, 2020) and end (May 5, 2023) of the pandemic. A binary variable was created within the data to reflect whether or not an incident occurred within the COVID-19 pandemic. In order to also measure empty dates that had no shooting incident, the shooting data was first merged into the weather data, and multiple incidents on single dates were removed so that each date with an incident only had one incident. This ensured that shooting rates within the pandemic and outside of the pandemic could be compared.
+
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+pandemic_shooting <- left_join(weather, shooting, by = c("month", "day", "year")) %>% 
+  select(-c(name, prcp, prcp_attributes, tmax, tmin, latitude.x, longitude.x)) %>% 
+  group_by(year, month, day) %>% 
+  slice_head() %>% 
+  ungroup() %>% 
+  mutate(
+    shooting = incident_key > 0,
+    shooting = case_match(shooting,
+                          TRUE ~ "Incident",
+                          NA ~ "No Incident"),
+    month = case_match(month,
+                       "January" ~ 1,
+                       "February" ~ 2,
+                       "March" ~ 3,
+                       "April" ~ 4,
+                       "May" ~ 5,
+                       "June" ~ 6,
+                       "July" ~ 7,
+                       "August" ~ 8,
+                       "September" ~ 9,
+                       "October" ~ 10,
+                       "November" ~ 11,
+                       "December" ~ 12),
+    covid = case_when(
+      year == 2020 & month > 3 ~ TRUE,
+      year == 2020 & month == 3 & day >= 11 ~ TRUE,
+      year == 2021 ~ TRUE,
+      year == 2022 ~ TRUE,
+      year == 2023 & month < 5 ~ TRUE,
+      year == 2023 & month == 5 & day <= 5 ~ TRUE
+    ),
+    covid = case_match(covid,
+                       TRUE ~ "During Covid",
+                       NA ~ "Not During Covid"),
+    month = case_match(month,
+                       1 ~ "January",
+                       2 ~ "February",
+                       3 ~ "March",
+                       4 ~ "April",
+                       5 ~ "May",
+                       6 ~ "June",
+                       7 ~ "July",
+                       8 ~ "August",
+                       9 ~ "September",
+                       10 ~ "October",
+                       11 ~ "November",
+                       12 ~ "December")
+    )
+```
+
+
+### if anyone else used any other data, add your sections in here as well

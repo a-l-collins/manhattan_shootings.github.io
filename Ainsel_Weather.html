@@ -322,14 +322,21 @@ div.tocify {
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        
+        <li>
+  <a href="data_description.html">Data</a>
+</li>
+<li>
+  <a href="full_report.html">Report</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown-header">alissa</li>
 <li class="dropdown-header">miho</li>
-<li class="dropdown-header">te hsuan</li>
-<li class="dropdown-header">ainsel</li>
 <li class="dropdown-header">kino</li>
+<li class="dropdown-header">te hsuan</li>
+<li>
+  <a href="Ainsel_Weather.html">ainsel</a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -778,7 +785,7 @@ week.</p>
 <div id="effect-of-the-seasons" class="section level3">
 <h3><strong>Effect of the seasons</strong></h3>
 <p>Do shooting rates differ between months?</p>
-<pre class="r"><code>plot_daylight_month &lt;- daylight_shooting %&gt;%
+<pre class="r"><code>plot_daylight_month &lt;- shooting %&gt;%
   mutate(
     month = as.factor(month),
     month = fct_relevel(month, c(&quot;January&quot;, &quot;February&quot;, &quot;March&quot;, &quot;April&quot;, &quot;May&quot;, &quot;June&quot;, &quot;July&quot;, &quot;August&quot;, &quot;September&quot;, &quot;October&quot;, &quot;November&quot;, &quot;December&quot;))) %&gt;%
@@ -824,20 +831,10 @@ months.</p>
   select(name, month, day, year, prcp, prcp_attributes, tmax, tmin, latitude, longitude)
 
 # Merging weather and shooting
-weather_shooting &lt;- left_join(weather, shooting, by = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;)) %&gt;% 
-  group_by(year, month, day) %&gt;% 
-  slice_head() %&gt;% 
-  ungroup() %&gt;% 
-  mutate(
-    shooting = incident_key &gt; 0,
-    shooting = case_match(shooting,
-                          TRUE ~ &quot;Incident&quot;,
-                          NA ~ &quot;No Incident&quot;)
-  )
+weather_shooting &lt;- left_join(shooting, weather, by = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;))
 
 # Plot
 plot_temp_shoot_hist &lt;- weather_shooting %&gt;% 
-  drop_na(incident_key) %&gt;% 
   mutate(tmax = tmax / 10) %&gt;% 
   ggplot(aes(x = tmax)) +
   geom_histogram(fill = &quot;violetred4&quot;) +
