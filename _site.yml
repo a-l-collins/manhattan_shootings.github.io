@@ -2,17 +2,22 @@ name: "Yay internet!"
 output_dir: "."
 navbar:
   title: "Home"
+  left:
+   - text: "Data"
+     href: data_description.html
+   - text: "Report"
+     href: full_report.html
   right:
     - text: "alissa"
       href: 
     - text: "miho"
       href:
+    - text: "kino"
+      href:
     - text: "te hsuan"
       href:
     - text: "ainsel"
       href: Ainsel_Weather.html
-    - text: "kino"
-      href:
 output:
   html_document:
     theme: flatly

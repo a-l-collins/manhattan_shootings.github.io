@@ -1,0 +1,26 @@
+---
+title: "Data Processing"
+output: html_document
+---
+
+### **Libraries**
+
+```{r}
+# add all libraries used here
+```
+
+### **Shooting Data**
+
+[description of data]
+
+[description of cleaning process]
+
+```{r}
+# code used in cleaning here
+```
+
+### **Time Data**
+
+[ainsel: add all data cleaning & merging steps, + descriptions, here]
+
+if anyone else used any other data, add your sections in here as well

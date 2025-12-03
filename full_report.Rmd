@@ -1,0 +1,70 @@
+---
+title: "Report"
+output: html_document
+---
+
+## **Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in New York**
+
+### **Motivation**
+
+Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the (Midtown Manhattan mass shooting)[https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls] in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We would like to perform a descriptive exploration of socioeconomic, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
+
+### **Questions**
+
+Questions we had about patterns that can be found in Manhattan shootings were:
+
+1. Does lighting in the area from street lamps influence shooting rates?
+1. Does time of day influence shooting rates?
+1. Does time of year and/or the COVID-19 pandemic influence shooting rates?
+1. How do the social/environmental conditions of each region influence shooting rates?
+1. Does location influence shooting rates?
+1. Does victim gender influence shooting rates?
+1. Do these patterns change based on whether the shooting had been fatal?
+
+### **Data**
+
+[description of data]
+
+### **Analysis**
+
+#### *alissa analysis*
+
+[copy in analysis. fix headers to be `#####`]
+
+#### *miho analysis*
+
+[copy in analysis. fix headers to be `#####`]
+
+#### *kino analysis*
+
+[copy in analysis. fix headers to be `#####`]
+
+#### *te hsuan analysis*
+
+[copy in analysis. fix headers to be `#####`]
+
+#### *ainsel analaysis*
+
+[copy in analysis. fix headers to be `#####`]
+
+### **Discussion**
+
+#### *alissa discussion*
+
+[copy in discussion]
+
+#### *miho discussion*
+
+[copy in discussion]
+
+#### *kino discussion*
+
+[copy in discussion]
+
+#### *te hsuan discussion*
+
+[copy in discussion]
+
+#### *ainsel discussion*
+
+[copy in discussion]
