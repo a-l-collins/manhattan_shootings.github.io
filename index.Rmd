@@ -5,4 +5,36 @@ output:
     theme: flatly
 ---
 
-Text here idk
+*welcome image*
+
+### **About**
+
+[Introductory paragraph]
+
+### **Map of Manhattan Shootings**
+
+Based on data from 2006-September 2025. Hover over each point to see [whatever it shows].
+
+*map of shootings*
+
+### **Our Data Sources**
+
+#### *Main Data*
+
+[info on shooting data]
+
+#### *Other Sources*
+
+[info on other data]
+
+### **The Team**
+
+- Ainsel Levitskaia-Collins (HL2710)
+- Alissa Shams Orchi (AO2965)
+- Kino Watanabe (KW3180)
+- Miho Kawanami (MK4996)
+- Te-Hsuan Huang (TH3147)
+
+### **The Screencast**
+
+[embed or link to unlisted video]
