@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Time Analysis</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown-header">alissa</li>
+<li class="dropdown-header">miho</li>
+<li class="dropdown-header">te hsuan</li>
+<li class="dropdown-header">ainsel</li>
+<li class="dropdown-header">kino</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Time Analysis</h1>
+
+</div>
+
+
+<p>Social conditions impact whether or not shootings occur, and this can
+be seen when analyzing <em>when</em> the shooting took place– whether
+that be hour of the day, day of the week, month of the year, or the year
+itself.</p>
+<p><em>some kind of introductory image here</em></p>
+<div id="effect-of-the-time-of-day" class="section level3">
+<h3><strong>Effect of the time of day</strong></h3>
+<p>Do we see more shootings during the day or night?</p>
+<pre class="r"><code># Code setup, included in this block for brevity
+library(tidyverse)
+library(rvest)
+library(httr)
+
+# Importing data:
+shooting_h &lt;- read_csv(&quot;./Data Folder/Shooting_Historic.csv&quot;) %&gt;% 
+  janitor::clean_names()
+
+shooting_2025 &lt;- read_csv(&quot;./Data Folder/Shooting_2025.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  mutate(statistical_murder_flag = case_match(statistical_murder_flag,
+                                             &quot;N&quot; ~ FALSE,
+                                             &quot;Y&quot; ~ TRUE))
+
+weather &lt;- read_csv(&quot;./Data Folder/Weather.csv&quot;) %&gt;% 
+  janitor::clean_names()
+
+holidays &lt;- readxl::read_excel(&quot;./Data Folder/Holidays.xlsx&quot;)
+
+# Merging and tidying shooting data:
+shooting &lt;- bind_rows(shooting_2025, shooting_h) %&gt;% 
+  separate_wider_delim(occur_date, delim = &quot;/&quot;, names_sep = &quot;.&quot;) %&gt;% 
+  rename(
+    month = occur_date.1,
+    day = occur_date.2,
+    year = occur_date.3,
+    time = occur_time
+  ) %&gt;% 
+  mutate(
+    month = case_match(month,
+      &quot;01&quot; ~ &quot;January&quot;,
+      &quot;02&quot; ~ &quot;February&quot;,
+      &quot;03&quot; ~ &quot;March&quot;,
+      &quot;04&quot; ~ &quot;April&quot;,
+      &quot;05&quot; ~ &quot;May&quot;,
+      &quot;06&quot; ~ &quot;June&quot;,
+      &quot;07&quot; ~ &quot;July&quot;,
+      &quot;08&quot; ~ &quot;August&quot;,
+      &quot;09&quot; ~ &quot;September&quot;,
+      &quot;10&quot; ~ &quot;October&quot;,
+      &quot;11&quot; ~ &quot;November&quot;,
+      &quot;12&quot; ~ &quot;December&quot;),
+    day = as.numeric(day),
+    year = as.numeric(year)) %&gt;% 
+  distinct(incident_key, .keep_all = TRUE) %&gt;% 
+  filter(boro == &quot;MANHATTAN&quot;)
+
+# creating a version with multiple daily incidents:
+shooting_d &lt;- bind_rows(shooting_2025, shooting_h) %&gt;% 
+  separate_wider_delim(occur_date, delim = &quot;/&quot;, names_sep = &quot;.&quot;) %&gt;% 
+  rename(
+    month = occur_date.1,
+    day = occur_date.2,
+    year = occur_date.3,
+    time = occur_time
+  ) %&gt;% 
+  mutate(
+    month = case_match(month,
+      &quot;01&quot; ~ &quot;January&quot;,
+      &quot;02&quot; ~ &quot;February&quot;,
+      &quot;03&quot; ~ &quot;March&quot;,
+      &quot;04&quot; ~ &quot;April&quot;,
+      &quot;05&quot; ~ &quot;May&quot;,
+      &quot;06&quot; ~ &quot;June&quot;,
+      &quot;07&quot; ~ &quot;July&quot;,
+      &quot;08&quot; ~ &quot;August&quot;,
+      &quot;09&quot; ~ &quot;September&quot;,
+      &quot;10&quot; ~ &quot;October&quot;,
+      &quot;11&quot; ~ &quot;November&quot;,
+      &quot;12&quot; ~ &quot;December&quot;),
+    day = as.numeric(day),
+    year = as.numeric(year)) %&gt;% 
+  filter(boro == &quot;MANHATTAN&quot;)
+
+# ran once to pull table from website
+# url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;
+
+# daylight &lt;- read_html(url) %&gt;% 
+  # html_table() %&gt;% 
+  # as.data.frame() %&gt;% 
+  # janitor::clean_names()
+
+# write.table(daylight, file = &quot;./Data Folder/Daylight_Hours.txt&quot;, quote = F, row.names = F, col.names = T, sep = &quot;\t&quot;)
+
+# uses the table grabbed above
+daylight &lt;- read.table(&quot;./Data Folder/Daylight_Hours.txt&quot;, header = T, sep = &#39;\t&#39;) %&gt;% 
+  rename(day = var_1) %&gt;% 
+  pivot_longer(
+    jan:dec,
+    names_to = &quot;month&quot;,
+    values_to = &quot;time&quot;
+  ) %&gt;% 
+  separate_wider_delim(time, delim = &quot;/&quot;, names_sep = &quot;_&quot;) %&gt;% 
+  rename(
+    sunrise = time_1,
+    sunset = time_2
+  ) %&gt;% 
+  mutate(
+    month = case_match(month,
+      &quot;jan&quot; ~ &quot;January&quot;,
+      &quot;feb&quot; ~ &quot;February&quot;,
+      &quot;mar&quot; ~ &quot;March&quot;,
+      &quot;apr&quot; ~ &quot;April&quot;,
+      &quot;may&quot; ~ &quot;May&quot;,
+      &quot;jun&quot; ~ &quot;June&quot;,
+      &quot;jul&quot; ~ &quot;July&quot;,
+      &quot;aug&quot; ~ &quot;August&quot;,
+      &quot;sep&quot; ~ &quot;September&quot;,
+      &quot;oct&quot; ~ &quot;October&quot;,
+      &quot;nov&quot; ~ &quot;November&quot;,
+      &quot;dec&quot; ~ &quot;December&quot;)
+    )
+
+# Creates a variable for day/night
+daylight_shooting &lt;- left_join(shooting, daylight, by = c(&quot;month&quot;, &quot;day&quot;)) %&gt;%
+  separate_wider_delim(time, delim = &quot;:&quot;, names_sep = &quot;_&quot;) %&gt;% 
+  separate_wider_delim(sunrise:sunset, delim = &quot;:&quot;, names_sep = &quot;_&quot;) %&gt;% 
+  rename(
+    hour = time_1,
+    minute = time_2,
+    sunrise_hour = sunrise_1,
+    sunrise_minute = sunrise_2,
+    sunset_hour = sunset_1,
+    sunset_minute = sunset_2
+  ) %&gt;% 
+  select(-time_3) %&gt;% 
+  mutate(
+    hour = as.numeric(hour),
+    minute = as.numeric(minute),
+    
+    sunrise_minute = as.numeric(sunrise_minute),
+    sunrise_hour = as.numeric(sunrise_hour),
+    
+    sunset_minute = na_if(sunset_minute, &quot;&quot;),
+    sunset_minute = as.numeric(sunset_minute),
+    sunset_minute = replace_na(sunset_minute, 0),
+    sunset_hour = as.numeric(sunset_hour),
+    sunset_hour = sunset_hour + 12,
+    
+    daylight = case_when(
+      hour &gt; sunrise_hour &amp; hour &lt; sunset_hour ~ TRUE,
+      hour == sunrise_hour &amp; minute &gt;= sunrise_minute ~ TRUE,
+      hour == sunset_hour &amp; minute &lt;= sunset_minute ~ TRUE
+    ),
+    daylight = case_match(daylight,
+      TRUE ~ &quot;Daytime&quot;,
+      NA ~ &quot;Nighttime&quot;
+    )
+  ) %&gt;% 
+  select(incident_key, month, day, year, hour, minute, sunrise_hour, sunrise_minute, sunset_hour, sunset_minute, daylight, everything())
+
+# Plot of shootings per hour of the day
+plot_daylight_hour &lt;- daylight_shooting %&gt;% 
+  ggplot(aes(x = hour)) +
+  geom_bar(fill = &quot;violetred4&quot;) +
+  theme_minimal() +
+  xlab(&quot;Hour of the Day&quot;) +
+  ylab(&quot;Number of Shootings&quot;) +
+  ggtitle(&quot;Count of Shootings per Hour of Day&quot;)
+
+plot_daylight_hour</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/time_hours-1.png" width="672" /></p>
+<p>It looks like we do see a lot more shootings during the night, and a
+noticeable dip in shootings during typical working day hours.</p>
+<p>We can test this further by examining whether more shootings happen
+during the night (defined by the sunset-sunrise period) than during the
+day:</p>
+<pre class="r"><code># Plot of day/night shootings in general
+plot_daylight_yn &lt;- daylight_shooting %&gt;% 
+  ggplot(aes(x = daylight)) +
+  geom_bar(fill = &quot;violetred4&quot;, width = 0.5) +
+  theme_minimal() +
+  ylab(&quot;Total Number of Shootings&quot;) +
+  xlab(&quot;&quot;) +
+  ggtitle(&quot;Count of Daytime vs Nighttime Shootings&quot;)
+
+plot_daylight_yn</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/time_yn-1.png" width="672" /></p>
+<p>It does look like there is a significant difference in daytime vs
+nighttime shootings.</p>
+<p>We can confirm whether this is statistically true using a proportion
+test:</p>
+<pre class="r"><code>daylight_count &lt;- daylight_shooting %&gt;% 
+  count(daylight) %&gt;% 
+  pivot_wider(
+    names_from = daylight,
+    values_from = n
+  ) %&gt;% 
+  mutate(
+    total = Daytime + Nighttime
+  )
+
+daylight_test &lt;- prop.test(x = pull(daylight_count, Nighttime),
+                           n = pull(daylight_count, total)) %&gt;% 
+  broom::tidy() %&gt;% 
+  select(estimate, p.value)
+
+knitr::kable(daylight_test, digits = 2, col.names = c(&quot;Proportion of Nighttime to Total&quot;, &quot;P Value&quot;))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Proportion of Nighttime to Total</th>
+<th align="right">P Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.74</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>As we can see from a p-value of 0, which is below our significance
+level of 0.05, the proportion of shootings that happen at night compared
+to the total is significantly higher than an even ratio of 1 nighttime
+shooting per 1 daytime shooting. This indicates that we do in fact see a
+significantly higher number of shootings occur at night than we do
+during the day.</p>
+</div>
+<div id="effect-of-the-day-of-the-week" class="section level3">
+<h3><strong>Effect of the day of the week</strong></h3>
+<p>Do we see more shootings during the weekend than during the
+weekdays?</p>
+<pre class="r"><code>#&#39; Read in calendar
+#&#39;
+#&#39; @param year Relevant sheet name
+#&#39; @param range Range for the relevant month
+#&#39;
+#&#39; @returns Formatted month dates for the provided year and month
+read_calendar = function(year, month, range) {
+  sheet_name = as.character(year)
+  range = as.character(range)
+  month = as.character(month)
+  
+  func_cal &lt;- readxl::read_xlsx(&quot;./Data Folder/Calendar_AllYears.xlsx&quot;, range = range, sheet = sheet_name) %&gt;% 
+    janitor::clean_names() %&gt;% 
+    rename(
+      Sunday = s_1,
+      Monday = m,
+      Tuesday = t_3,
+      Wednesday = w,
+      Thursday = t_5,
+      Friday = f,
+      Saturday = s_7
+    ) %&gt;% 
+    pivot_longer(
+      Sunday:Saturday,
+      names_to = &quot;day_of_week&quot;,
+      values_to = &quot;day&quot;
+    ) %&gt;% 
+    drop_na(day) %&gt;% 
+    mutate(
+      month = month,
+      year = year
+    )
+  
+  func_cal
+}
+
+#&#39; Create a yearly calendar
+#&#39;
+#&#39; @param year Relevant sheet name
+#&#39;
+#&#39; @returns Full calendar for the provided year
+create_yearly_calendar = function(year) {
+  year = as.character(year)
+  
+  func_cal &lt;- bind_rows(
+    read_calendar(year = year, month = &quot;January&quot;, range = &quot;A3:G9&quot;),
+    read_calendar(year = year, month = &quot;February&quot;, range = &quot;I3:O9&quot;),
+    read_calendar(year = year, month = &quot;March&quot;, range = &quot;Q3:W9&quot;),
+    read_calendar(year = year, month = &quot;April&quot;, range = &quot;A12:G18&quot;),
+    read_calendar(year = year, month = &quot;May&quot;, range = &quot;I12:O18&quot;),
+    read_calendar(year = year, month = &quot;June&quot;, range = &quot;Q12:W18&quot;),
+    read_calendar(year = year, month = &quot;July&quot;, range = &quot;A21:G27&quot;),
+    read_calendar(year = year, month = &quot;August&quot;, range = &quot;I21:O27&quot;),
+    read_calendar(year = year, month = &quot;September&quot;, range = &quot;Q21:W27&quot;),
+    read_calendar(year = year, month = &quot;October&quot;, range = &quot;A30:G36&quot;),
+    read_calendar(year = year, month = &quot;November&quot;, range = &quot;I30:O36&quot;),
+    read_calendar(year = year, month = &quot;December&quot;, range = &quot;Q30:W36&quot;)
+  )
+}
+
+#&#39; Create a calendar with all provided years
+#&#39;
+#&#39; @param year_list Relevant sheet names
+#&#39;
+#&#39; @returns A calendar with all years from indicated sheets
+create_full_calendar = function(year_list) {
+  output &lt;- tibble(
+    day_of_week = NA,
+    day = NA,
+    month = NA,
+    year = NA
+  )
+  
+  for (i in 1:length(year_list)) {
+    output &lt;- bind_rows(
+      output,
+      create_yearly_calendar(year_list[[i]])
+    )
+  }
+  
+  output &lt;- output %&gt;% drop_na(day)
+}
+
+calendar &lt;- create_full_calendar(2006:2025) %&gt;% 
+  mutate(
+    day = as.numeric(day),
+    year = as.numeric(year)
+  )
+
+# Merge with shootings:
+calendar_shooting &lt;- left_join(shooting, calendar, by = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;)) %&gt;% 
+  mutate(
+    weekend = case_when(
+      day_of_week == &quot;Sunday&quot; ~ TRUE,
+      day_of_week == &quot;Saturday&quot; ~ TRUE
+    ),
+    weekend = case_match(weekend,
+      TRUE ~ &quot;Weekend&quot;,
+      NA ~ &quot;Weekday&quot;
+    ),
+    day_of_week = as.factor(day_of_week),
+    day_of_week = fct_relevel(day_of_week, c(&quot;Sunday&quot;, &quot;Monday&quot;, &quot;Tuesday&quot;, &quot;Wednesday&quot;, &quot;Thursday&quot;, &quot;Friday&quot;))
+  )
+
+plot_calendar_alldays &lt;- calendar_shooting %&gt;% 
+  ggplot(aes(x = day_of_week)) +
+  geom_bar(fill = &quot;violetred4&quot;, width = 0.7) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;Total Number of Shootings&quot;) +
+  ggtitle(&quot;Total number of shootings per day of the week&quot;)
+
+plot_calendar_alldays</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/week_alldays-1.png" width="672" /></p>
+<p>We do see spikes in shooting counts during the weekends as opposed to
+the weekdays.</p>
+<p>This can be further tested by examining average shooting counts
+during weekends and weekdays and ignoring the specific days of the
+week:</p>
+<pre class="r"><code>plot_calendar_weekend &lt;- calendar_shooting %&gt;% 
+  count(weekend) %&gt;% 
+  pivot_wider(
+    names_from = weekend,
+    values_from = n
+  ) %&gt;% 
+  mutate(
+    Weekday = Weekday / 5,
+    Weekend = Weekend / 2
+  ) %&gt;% 
+  pivot_longer(
+    Weekday:Weekend,
+    names_to = &quot;weekend&quot;,
+    values_to = &quot;n&quot;
+  ) %&gt;% 
+  ggplot(aes(x = weekend, y = n)) +
+  geom_bar(stat = &quot;identity&quot;, fill = &quot;violetred4&quot;, width = 0.7) +
+  theme_minimal() +
+  xlab(&quot;&quot;) +
+  ylab(&quot;Average number of shootings&quot;) +
+  ggtitle(&quot;Average number of shootings per weekday vs weekend&quot;)
+
+plot_calendar_weekend</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/week_yn-1.png" width="672" /></p>
+<p>It does look like, after averaging by the number of weekend or
+weekday days, the weekends do see a higher number of shootings than the
+weekdays.</p>
+<p>We can confirm whether this is statistically true using a proportion
+test:</p>
+<pre class="r"><code>calendar_count &lt;- calendar_shooting %&gt;% 
+  count(weekend) %&gt;% 
+  pivot_wider(
+    names_from = weekend,
+    values_from = n
+  ) %&gt;% 
+  mutate(
+    Weekday = Weekday / 5,
+    Weekend = Weekend / 2
+  ) %&gt;% 
+  mutate(
+    total = Weekday + Weekend
+  )
+
+calendar_test &lt;- prop.test(x = pull(calendar_count, Weekend),
+                           n = pull(calendar_count, total)) %&gt;% 
+  broom::tidy() %&gt;% 
+  select(estimate, p.value)
+
+knitr::kable(calendar_test, digits = 2, col.names = c(&quot;Proportion of Weekend to Total&quot;, &quot;P Value&quot;))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Proportion of Weekend to Total</th>
+<th align="right">P Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.61</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>As we can see from a p-value of 0, which is below our significance
+level of 0.05, the proportion of shootings that happen during the
+weekend compared to the full week is significantly higher than an even
+ratio of 1 average weekend shooting per 1 average weekday shooting. This
+indicates that we do in fact see a significantly higher number of
+shootings occur over the weekend than we do during the rest of the
+week.</p>
+</div>
+<div id="effect-of-the-seasons" class="section level3">
+<h3><strong>Effect of the seasons</strong></h3>
+<p>Do shooting rates differ between months?</p>
+<pre class="r"><code>plot_daylight_month &lt;- daylight_shooting %&gt;%
+  mutate(
+    month = as.factor(month),
+    month = fct_relevel(month, c(&quot;January&quot;, &quot;February&quot;, &quot;March&quot;, &quot;April&quot;, &quot;May&quot;, &quot;June&quot;, &quot;July&quot;, &quot;August&quot;, &quot;September&quot;, &quot;October&quot;, &quot;November&quot;, &quot;December&quot;))) %&gt;%
+  ggplot(aes(x = month)) +
+  geom_bar(fill = &quot;violetred4&quot;, width = 0.7) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;Number of Shootings&quot;) +
+  ggtitle(&quot;Count of shootings per month&quot;)
+
+plot_daylight_month</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/seasons_months-1.png" width="672" /></p>
+<p>It looks like more shootings tend to happen during holiday periods
+(December-January and June-August) than during the rest of the year, and
+more tend to happen during the warmer months than during the colder
+months.</p>
+<p>Do we see this reflected in a temperature plot?</p>
+<pre class="r"><code>weather &lt;- weather %&gt;% 
+  separate_wider_delim(date, delim = &quot;-&quot;, names_sep = &quot;_&quot;) %&gt;% 
+  rename(
+    year = date_1,
+    month = date_2,
+    day = date_3
+  ) %&gt;% 
+  mutate(
+    month = case_match(month,
+      &quot;01&quot; ~ &quot;January&quot;,
+      &quot;02&quot; ~ &quot;February&quot;,
+      &quot;03&quot; ~ &quot;March&quot;,
+      &quot;04&quot; ~ &quot;April&quot;,
+      &quot;05&quot; ~ &quot;May&quot;,
+      &quot;06&quot; ~ &quot;June&quot;,
+      &quot;07&quot; ~ &quot;July&quot;,
+      &quot;08&quot; ~ &quot;August&quot;,
+      &quot;09&quot; ~ &quot;September&quot;,
+      &quot;10&quot; ~ &quot;October&quot;,
+      &quot;11&quot; ~ &quot;November&quot;,
+      &quot;12&quot; ~ &quot;December&quot;),
+    day = as.numeric(day),
+    year = as.numeric(year)) %&gt;% 
+  filter(year &gt;= 2006) %&gt;% 
+  select(name, month, day, year, prcp, prcp_attributes, tmax, tmin, latitude, longitude)
+
+# Merging weather and shooting
+weather_shooting &lt;- left_join(weather, shooting, by = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;)) %&gt;% 
+  group_by(year, month, day) %&gt;% 
+  slice_head() %&gt;% 
+  ungroup() %&gt;% 
+  mutate(
+    shooting = incident_key &gt; 0,
+    shooting = case_match(shooting,
+                          TRUE ~ &quot;Incident&quot;,
+                          NA ~ &quot;No Incident&quot;)
+  )
+
+# Plot
+plot_temp_shoot_hist &lt;- weather_shooting %&gt;% 
+  drop_na(incident_key) %&gt;% 
+  mutate(tmax = tmax / 10) %&gt;% 
+  ggplot(aes(x = tmax)) +
+  geom_histogram(fill = &quot;violetred4&quot;) +
+  theme_minimal() +
+  xlab(&quot;Maximum daily temperature (C)&quot;) +
+  ylab(&quot;Total shooting count&quot;) +
+  ggtitle(&quot;Histogram of total shooting count compared to maximum daily temperature&quot;)
+
+plot_temp_shoot_hist</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/seasons_temperature-1.png" width="672" /></p>
+<p>It looks like we can see two spikes at approximately 10 degrees
+Celsius (50 degrees Fahrenheit) and 28 degrees celsius (82 degrees
+Fahrenheit). This does not reflect the small spike seen during December
+and January above, but it confirms the overall trend that more shootings
+tend to happen during the summer, which has warmer weather, than during
+the rest of the year.</p>
+</div>
+<div id="effect-of-the-covid-19-pandemic" class="section level3">
+<h3><strong>Effect of the COVID-19 pandemic</strong></h3>
+<p>Have shooting rates changed over the years, and did the COVID-19
+pandemic impact shooting rates at all?</p>
+<pre class="r"><code>plot_covid_yearly &lt;- shooting %&gt;% 
+  filter(year != 2025) %&gt;% 
+  ggplot(aes(x = year)) +
+  geom_histogram(bins = 19, color = &quot;violetred4&quot;, fill = &quot;violetred4&quot;) +
+  theme_minimal() +
+  ylab(&quot;Number of Shootings&quot;) +
+  xlab(&quot;Year&quot;) +
+  ggtitle(&quot;Count of shootings per year&quot;)
+
+plot_covid_yearly</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/years_hist-1.png" width="672" /></p>
+<p>When looking at the years alone, we can see that there is a decline
+in shooting rates between 2006 and 2019, at which point there is a spike
+in shooting rates that has not yet recovered to pre-pandemic rates.</p>
+<p>This suggests that there have been more shootings during the COVID-19
+pandemic than otherwise, which we can compare directly using this
+plot:</p>
+<pre class="r"><code># march 11 2020: declared pandemic by WHO
+# may 5 2023: end of pandemic declared by WHO
+
+pandemic_shooting &lt;- left_join(weather, shooting, by = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;)) %&gt;% 
+  select(-c(name, prcp, prcp_attributes, tmax, tmin, latitude.x, longitude.x)) %&gt;% 
+  group_by(year, month, day) %&gt;% 
+  slice_head() %&gt;% 
+  ungroup() %&gt;% 
+  mutate(
+    shooting = incident_key &gt; 0,
+    shooting = case_match(shooting,
+                          TRUE ~ &quot;Incident&quot;,
+                          NA ~ &quot;No Incident&quot;),
+    month = case_match(month,
+                       &quot;January&quot; ~ 1,
+                       &quot;February&quot; ~ 2,
+                       &quot;March&quot; ~ 3,
+                       &quot;April&quot; ~ 4,
+                       &quot;May&quot; ~ 5,
+                       &quot;June&quot; ~ 6,
+                       &quot;July&quot; ~ 7,
+                       &quot;August&quot; ~ 8,
+                       &quot;September&quot; ~ 9,
+                       &quot;October&quot; ~ 10,
+                       &quot;November&quot; ~ 11,
+                       &quot;December&quot; ~ 12),
+    covid = case_when(
+      year == 2020 &amp; month &gt; 3 ~ TRUE,
+      year == 2020 &amp; month == 3 &amp; day &gt;= 11 ~ TRUE,
+      year == 2021 ~ TRUE,
+      year == 2022 ~ TRUE,
+      year == 2023 &amp; month &lt; 5 ~ TRUE,
+      year == 2023 &amp; month == 5 &amp; day &lt;= 5 ~ TRUE
+    ),
+    covid = case_match(covid,
+                       TRUE ~ &quot;During Covid&quot;,
+                       NA ~ &quot;Not During Covid&quot;),
+    month = case_match(month,
+                       1 ~ &quot;January&quot;,
+                       2 ~ &quot;February&quot;,
+                       3 ~ &quot;March&quot;,
+                       4 ~ &quot;April&quot;,
+                       5 ~ &quot;May&quot;,
+                       6 ~ &quot;June&quot;,
+                       7 ~ &quot;July&quot;,
+                       8 ~ &quot;August&quot;,
+                       9 ~ &quot;September&quot;,
+                       10 ~ &quot;October&quot;,
+                       11 ~ &quot;November&quot;,
+                       12 ~ &quot;December&quot;)
+    )
+
+plot_covid_yn &lt;- pandemic_shooting %&gt;% 
+  ggplot(aes(x = covid, fill = shooting)) +
+  geom_bar(position = position_dodge()) +
+  theme_minimal() +
+  scale_fill_manual(values = c(&quot;violetred4&quot;, &quot;lightsteelblue3&quot;)) +
+  xlab(&quot;&quot;) +
+  ggtitle(&quot;Comparison of shooting rates during and not during the pandemic&quot;)
+
+plot_covid_yn</code></pre>
+<p><img src="Ainsel_Weather_files/figure-html/years_covid-1.png" width="672" /></p>
+<p>Visually, it looks like there is a much higher proportion of
+shootings during the COVID-19 pandemic than not.</p>
+<p>We can test whether this is statistically true using a two-sample
+test of proportions:</p>
+<pre class="r"><code># Creating counts for the test
+pandemic_count &lt;- pandemic_shooting %&gt;% 
+  group_by(covid) %&gt;% 
+  count(shooting) %&gt;% 
+  pivot_wider(
+    names_from = covid,
+    values_from = n
+  ) %&gt;% 
+  rename(
+    &quot;covid&quot; = &quot;During Covid&quot;,
+    &quot;not_covid&quot; = &quot;Not During Covid&quot;
+  )
+
+# Two-sample test of proportions
+pandemic_test &lt;- prop.test(x = pull(pandemic_count, covid), 
+                           n = pull(pandemic_count, not_covid),
+                           alternative = &quot;greater&quot;) %&gt;% 
+  broom::tidy() %&gt;% 
+  select(estimate1, estimate2, p.value)
+
+knitr::kable(pandemic_test, digits = 2, col.names = c(&quot;During Covid Proportion&quot;, &quot;Not During Covid Proportion&quot;, &quot;P Value&quot;))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">During Covid Proportion</th>
+<th align="right">Not During Covid Proportion</th>
+<th align="right">P Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.27</td>
+<td align="right">0.15</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>As we can see from a p-value of 0, which is below our significance
+level of 0.05, the proportion of shootings during the COVID-19 pandemic
+is significantly higher than the proportion of shootings that are not
+during the COVID-19 pandemic. This indicates that we did in fact see a
+spike in shootings during this time, as was shown by the histogram
+above.</p>
+</div>
+<div id="in-conclusion" class="section level3">
+<h3><strong>In Conclusion</strong></h3>
+<p>In conclusion, we see a trend in shootings where they tend to occur
+at night, during the weekend, and during periods of the year (the winter
+and the summer) when vacations/time off work are more likely to occur.
+This indicates that, temporally, shootings are far more likely to occur
+outside of standard working hours (9am - 5pm on weekdays), and that
+trends in these areas are based on when individuals are either occupied
+or when they have free time. It is likely that the temporal pattern of
+shootings is the result, and not the cause, of factors that influence
+whether a shooting takes place. The spike in shootings during the
+COVID-19 pandemic supports this theory, as there was an increase both in
+those who became unemployed and those who started working from home/saw
+their working hours reduced, causing an increase both in free time and
+in the shooting rate. Future testing to determine whether this theory is
+accurate could focus on the interpersonal element of shootings and in
+what circumstances they took place, and whether those circumstances are
+connected to that individual’s free time.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

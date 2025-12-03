@@ -10,7 +10,7 @@ navbar:
     - text: "te hsuan"
       href:
     - text: "ainsel"
-      href:
+      href: Ainsel_Weather.html
     - text: "kino"
       href:
 output:
