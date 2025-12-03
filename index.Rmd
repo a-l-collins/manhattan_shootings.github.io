@@ -1,0 +1,8 @@
+---
+title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in New York"
+output: 
+  html_document:
+    theme: flatly
+---
+
+Text here idk
