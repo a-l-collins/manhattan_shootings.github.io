@@ -3,6 +3,8 @@ title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates i
 output: 
   html_document:
     theme: flatly
+    toc: true
+    toc_float: true
 ---
 
 *welcome image*
