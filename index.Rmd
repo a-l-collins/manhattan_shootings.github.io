@@ -2,7 +2,6 @@
 title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in Manhattan"
 output: 
   html_document:
-    theme: flatly
     toc: true
     toc_float: true
 ---
