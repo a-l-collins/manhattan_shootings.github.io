@@ -9,7 +9,7 @@ output:
 
 ## **Motivation**
 
-Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the (Midtown Manhattan mass shooting)[https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls] in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of socioeconomic, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
+Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the [Midtown Manhattan mass shooting](https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls) in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of neighborhood factors, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
 
 ## **Questions**
 
@@ -33,9 +33,13 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 
 [copy in discussion]
 
-### *kino discussion*
+### *Green space discussion*
 
-[copy in discussion]
+<img src="./Figures/park3.jpg" style="width:75%">
+
+For census tracts that contain park acreage, the highest densities of shootings per park acre were concentrated in Harlem and Upper Manhattan/West Harlem. When examining all census tracts—regardless of whether a park is present—we observe that Upper Manhattan, including Harlem and Inwood, experiences a higher number of shooting incidents relative to mid- and lower-Manhattan census tracts. Across all tracts, park acreage and the number of shooting incidents are positively correlated, suggesting that the presence of parks may be moderately associated with higher shooting counts. However, this pattern is likely influenced by substantial data limitations: many parks could not be successfully geocoded, and parks spanning multiple census tracts were not fully accounted for, leading to probable underestimation of the true relationship between green space and violence. This association may also reflect uncontrolled factors such as population density or tract size.
+
+When restricting the analysis to only census tracts with parks, the correlation between total park acreage and shootings per acre becomes negative, which is consistent with prior literature suggesting that green space may have a protective effect against gun violence. Still, this within-tract analysis is subject to selection bias and may overstate the magnitude of the association. Overall, our findings are descriptive and highlight spatial patterns rather than causal effects.
 
 ### *Unlit street lamps discussion*
 
