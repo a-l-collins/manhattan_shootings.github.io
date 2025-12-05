@@ -73,12 +73,12 @@ Data on when sunrise and sunset occurs for each day of the year was pulled from 
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
 # Ran once to pull table from website:
-# url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
+url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
 
-# daylight <- read_html(url) %>% 
-  # html_table() %>% 
-  # as.data.frame() %>% 
-  # janitor::clean_names()
+daylight <- read_html(url) |>  
+  html_table() %>% 
+  as.data.frame() %>% 
+  janitor::clean_names()
 
 # write.table(daylight, file = "./Data Folder/Daylight_Hours.txt", quote = F, row.names = F, col.names = T, sep = "\t")
 
@@ -147,6 +147,11 @@ daylight_shooting <- left_join(shooting, daylight, by = c("month", "day")) %>%
     )
   ) %>% 
   select(incident_key, month, day, year, hour, minute, sunrise_hour, sunrise_minute, sunset_hour, sunset_minute, daylight, everything())
+
+readr::write_csv(
+  daylight_shooting, 
+  file = "./Data Folder/Daylight_Shooting_Stratified.csv"
+)
 ```
 
 #### *Day of the Week Data*

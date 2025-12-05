@@ -13,10 +13,10 @@
 
 <title>Data Processing</title>
 
-<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -35,6 +35,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -335,6 +337,12 @@ div.tocify {
 <li>
   <a href="Ainsel_Weather.html">Time Analysis</a>
 </li>
+<li>
+  <a href="https://github.com/a-l-collins/manhattan_shootings.github.io.git">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -440,12 +448,12 @@ sunrise/sunset/time variables cleaned so they both match and are in a
 indicate whether each individual shooting occurred within its date’s
 provided sunrise/sunset times or not.</p>
 <pre class="r"><code># Ran once to pull table from website:
-# url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;
+url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;
 
-# daylight &lt;- read_html(url) %&gt;% 
-  # html_table() %&gt;% 
-  # as.data.frame() %&gt;% 
-  # janitor::clean_names()
+daylight &lt;- read_html(url) |&gt;  
+  html_table() %&gt;% 
+  as.data.frame() %&gt;% 
+  janitor::clean_names()
 
 # write.table(daylight, file = &quot;./Data Folder/Daylight_Hours.txt&quot;, quote = F, row.names = F, col.names = T, sep = &quot;\t&quot;)
 
@@ -513,7 +521,12 @@ daylight_shooting &lt;- left_join(shooting, daylight, by = c(&quot;month&quot;, 
       NA ~ &quot;Nighttime&quot;
     )
   ) %&gt;% 
-  select(incident_key, month, day, year, hour, minute, sunrise_hour, sunrise_minute, sunset_hour, sunset_minute, daylight, everything())</code></pre>
+  select(incident_key, month, day, year, hour, minute, sunrise_hour, sunrise_minute, sunset_hour, sunset_minute, daylight, everything())
+
+readr::write_csv(
+  daylight_shooting, 
+  file = &quot;./Data Folder/Daylight_Shooting_Stratified.csv&quot;
+)</code></pre>
 </div>
 <div id="day-of-the-week-data" class="section level4">
 <h4><em>Day of the Week Data</em></h4>
