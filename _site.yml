@@ -16,7 +16,7 @@ navbar:
       href:
     - text: "te hsuan"
       href:
-    - text: "ainsel"
+    - text: "Time Analysis"
       href: Ainsel_Weather.html
 output:
   html_document:

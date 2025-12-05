@@ -1,5 +1,5 @@
 ---
-title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in New York"
+title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in Manhattan"
 output: 
   html_document:
     theme: flatly
@@ -7,7 +7,7 @@ output:
     toc_float: true
 ---
 
-*welcome image*
+<img src="images/manhattan_1.jpg" style="width:75%">
 
 ### **About**
 

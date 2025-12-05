@@ -363,7 +363,7 @@ div.tocify {
 be seen when analyzing <em>when</em> the shooting took place– whether
 that be hour of the day, day of the week, month of the year, or the year
 itself.</p>
-<p><em>some kind of introductory image here</em></p>
+<p><img src="Images/time_1.jpg" style="width:75%"></p>
 <div id="effect-of-the-time-of-day" class="section level3">
 <h3><strong>Effect of the time of day</strong></h3>
 <p>Do we see more shootings during the day or night?</p>
@@ -371,6 +371,14 @@ itself.</p>
 library(tidyverse)
 library(rvest)
 library(httr)
+
+options(
+  ggplot2.continuous.colour = &quot;viridis&quot;,
+  ggplot2.continuous.fill = &quot;viridis&quot;
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 
 # Importing data:
 shooting_h &lt;- read_csv(&quot;./Data Folder/Shooting_Historic.csv&quot;) %&gt;% 
@@ -985,6 +993,7 @@ above.</p>
 </div>
 <div id="in-conclusion" class="section level3">
 <h3><strong>In Conclusion</strong></h3>
+<p><img src="Images/time_2.jpg" style="width:75%"></p>
 <p>In conclusion, we see a trend in shootings where they tend to occur
 at night, during the weekend, and during periods of the year (the winter
 and the summer) when vacations/time off work are more likely to occur.

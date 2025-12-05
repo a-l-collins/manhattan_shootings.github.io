@@ -10,7 +10,7 @@ output:
 
 Social conditions impact whether or not shootings occur, and this can be seen when analyzing *when* the shooting took place-- whether that be hour of the day, day of the week, month of the year, or the year itself.
 
-*some kind of introductory image here*
+<img src="images/time_1.jpg" style="width:75%">
 
 ### **Effect of the time of day**
 
@@ -21,6 +21,14 @@ Do we see more shootings during the day or night?
 library(tidyverse)
 library(rvest)
 library(httr)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 
 # Importing data:
 shooting_h <- read_csv("./Data Folder/Shooting_Historic.csv") %>% 
@@ -588,6 +596,8 @@ knitr::kable(pandemic_test, digits = 2, col.names = c("During Covid Proportion",
 As we can see from a p-value of `r round(pull(pandemic_test, p.value))`, which is below our significance level of 0.05, the proportion of shootings during the COVID-19 pandemic is significantly higher than the proportion of shootings that are not during the COVID-19 pandemic. This indicates that we did in fact see a spike in shootings during this time, as was shown by the histogram above.
 
 ### **In Conclusion**
+
+<img src="images/time_2.jpg" style="width:75%">
 
 In conclusion, we see a trend in shootings where they tend to occur at night, during the weekend, and during periods of the year (the winter and the summer) when vacations/time off work are more likely to occur. This indicates that, temporally, shootings are far more likely to occur outside of standard working hours (9am - 5pm on weekdays), and that trends in these areas are based on when individuals are either occupied or when they have free time. It is likely that the temporal pattern of shootings is the result, and not the cause, of factors that influence whether a shooting takes place. The spike in shootings during the COVID-19 pandemic supports this theory, as there was an increase both in those who became unemployed and those who started working from home/saw their working hours reduced, causing an increase both in free time and in the shooting rate. Future testing to determine whether this theory is accurate could focus on the interpersonal element of shootings and in what circumstances they took place, and whether those circumstances are connected to that individual's free time.
 
