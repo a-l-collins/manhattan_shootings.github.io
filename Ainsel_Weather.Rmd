@@ -8,7 +8,7 @@ output:
     
 ---
 
-Social conditions impact whether or not shootings occur, and this can be seen when analyzing *when* the shooting took place-- whether that be hour of the day, day of the week, month of the year, or the year itself.
+Social cond itions impact whether or not shootings occur, and this can be seen when analyzing *when* the shooting took place-- whether that be hour of the day, day of the week, month of the year, or the year itself.
 
 <img src="images/time_1.jpg" style="width:75%">
 
@@ -21,14 +21,6 @@ Do we see more shootings during the day or night?
 library(tidyverse)
 library(rvest)
 library(httr)
-
-options(
-  ggplot2.continuous.colour = "viridis",
-  ggplot2.continuous.fill = "viridis"
-)
-
-scale_colour_discrete = scale_colour_viridis_d
-scale_fill_discrete = scale_fill_viridis_d
 
 # Importing data:
 shooting_h <- read_csv("./Data Folder/Shooting_Historic.csv") %>% 
