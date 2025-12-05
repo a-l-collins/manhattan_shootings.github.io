@@ -17,6 +17,8 @@ With this context, our project tackles a specific and urgent issue: we are using
 
 By looking at crime that happens during the day compared to crime that happens at night, our goal is to find clear, data-driven answers that can help city officials decide where to spend money to fix lights and how to make every block safer.
 
+**Note: The street lamp data used for this analysis is restricted to the years 2020 through 2025 due to data storage and management requirements.**
+
 # Part 1: Interactive map visualizations
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
 # Step1: Downlaod the library
@@ -155,6 +157,8 @@ mapview(
 )
 ```
 
+* Comment: Figure shows the spatial distribution of unlit street lights and 2025 shooting locations across Manhattan. Unlit lights were more concentrated in northern Manhattan, particularly in Harlem and Washington Heights, while Midtown and much of Lower Manhattan had relatively few. Shooting incidents also clustered in northern Manhattan, overlapping with areas that exhibited higher counts of unlit lights. Although some shootings occurred in the Lower East Side, these tracts generally had fewer unlit lights. The map suggests a potential spatial correspondence between poorer street-lighting conditions and higher shooting activity, warranting further statistical evaluation.
+
 ### Longitudinal analysis during 2020 to 2025
 
 This map visualizes the total number of shooting incidents that occurred and total number of "street light out" service requests reported within each Manhattan census tract over the entire study period.
@@ -207,6 +211,8 @@ mapview(
 )
 ```
 
+* Comment: Figure presents the cumulative number of unlit street lights across Manhattan census tracts from 2020–2025 and the spatial distribution of cumulative shooting incidents during the same period. Higher counts of unlit lights were concentrated in northern Manhattan, particularly in Harlem and Washington Heights, while Midtown and parts of Lower Manhattan showed relatively fewer. Shooting incidents were widespread but exhibited dense clustering in central and northern Manhattan. Notably, several areas with high cumulative shooting activity overlapped with tracts that had elevated counts of unlit lights. This spatial correspondence suggests that neighborhoods with persistently poorer lighting conditions may also experience higher long-term shooting incidence, underscoring the need for further statistical evaluation.
+
 # Part 2: Statistical analysis
 
 This part models the association between the count of street lights out and the count of shooting incidents per Manhattan census tract using two methods: Poisson Regression (cross-sectional, 2025 only) and Generalized Estimating Equations (GEE) (longitudinal, 2020-2025).
@@ -250,6 +256,8 @@ summary(poisson_model_2025)
 # 2. Calculate Incidence Rate Ratios (IRR)
 exp(coef(poisson_model_2025))
 ```
+
+* Interpretation: The incidence rate ratio was 1.046 (p = 0.0025), indicating that each additional unlit street light in a census tract is associated with a 4.6% increase in the shooting rate.
 
 ### Longitudinal analysis during 2020 to 2025
 
@@ -319,6 +327,8 @@ poisson_gee_model <- geepack::geeglm(
 summary(poisson_gee_model)
 exp(coef(poisson_gee_model))
 ```
+
+* Interpretation: The estimated incidence rate ratio was 1.012 (p = 0.008), indicating that each additional unlit street light in a census tract is associated with a 1.2% increase in the shooting rate.
 
 # Part 3: Stratified analysis by day time and night time
 
@@ -436,6 +446,8 @@ knitr::kable(
 )
 ```
 
+* Interpretation: When stratifying the association between unlit street lights and shooting cases by time of day, the relationship remained statistically significant in both periods. During daytime, each additional unlit street light was associated with a 5.0% increase in the shooting rate (IRR = 1.050; p = 0.034). During nighttime, each additional unlit light corresponded to a 4.4% increase in the shooting rate (IRR = 1.044; p = 0.0309). Although the effect sizes were similar across day and night, the association was slightly stronger during daytime.
+
 ### Longitudinal analysis during 2020 to 2025
 
 #### Day time
@@ -543,3 +555,4 @@ knitr::kable(
 )
 ```
 
+* Interpretation: The association between unlit street lights and shooting cases remained statistically significant during both daylight and nighttime hours. During daylight, each additional unlit street light was associated with a 1% increase in the shooting rate (IRR = 1.01; p = 0.008). During nighttime, the effect was slightly larger, with each additional unlit light associated with a 2% increase in the shooting rate (IRR = 1.02; p < 0.001). These results suggest that poorer street-lighting conditions are consistently associated with higher shooting incidence over time. The slightly stronger association at night aligns with expectations that inadequate lighting may have a greater impact on nighttime safety, although the effect remains present across both time periods.
