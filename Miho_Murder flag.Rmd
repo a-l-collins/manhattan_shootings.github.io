@@ -1,8 +1,6 @@
 
 ---
 title: "Analysis of Fatal Shooting Outcomes in New York City"
-author: "Miho Kawanami, mk4996"
-date: "2025-11-11"
 output: 
   html_document:
     code_folding: hide
@@ -35,8 +33,9 @@ library(kableExtra)
 library(broom)
 ```
 
-```{r, echo = FALSE}
-census_api_key("71edc420ec0b86cf5a54c3fc72727f4149467e79")
+```{r, message=FALSE, echo=FALSE}
+census_api_key("71edc420ec0b86cf5a54c3fc72727f4149467e79",  install = TRUE, overwrite = TRUE) |> 
+  invisible()
 ```
 
 ```{r}

@@ -1,18 +1,21 @@
 ---
-title: "alissa_location"
+title: "Geographic and Location-Based Patterns of Shooting Incidents in NYC"
 author: "Alissa Shams Orchi"
-date: "2025-11-18"
-output: 
+output:
   html_document:
-    code_folding: hide
     toc: true
     toc_float: true
+    code_folding: hide
 ---
-# 1. Introduction
+
+# Introduction
 
 ## Purpose and Data Sources for NYC Shooting Location Analysis
 
+
 This project analyzes shooting incidents in New York City with a focus on geographic and location-based patterns. The analysis uses two NYPD datasets: the historic dataset covering incidents from 2015 through 2024, and the 2025 year-to-date dataset providing the most recent records. Together, these data allow examination of long-term patterns and current trends in shootings across boroughs and location types.
+
+**Note** The analysis was limited to the most recent 10-year period (2015-2025) to optimize file size for web-based visualization while still capturing meaningful temporal patterns.
 
 The analysis includes descriptive summaries of borough-level shooting counts, location-based breakdowns (inside versus outside), and a Poisson regression model evaluating whether shooting counts vary by location type and victim race across boroughs. These approaches provide insight into how environmental and demographic factors relate to shooting incidents in New York City.
 
@@ -89,7 +92,7 @@ dat_all_sf = dat_all |>
 
 This section presents descriptive summaries of shooting incidents across the five boroughs and by location type. It focuses on understanding basic patterns in counts and distributions before moving into spatial visualization and regression modeling.
 
-## 2a. Borough-Level Shooting Counts (2015–2024)
+## 2a. Borough-Level Shooting Counts (2015-2024)
 
 This subsection summarizes the total number of shooting incidents for each borough using the historic dataset from 2015 to 2024.
 
@@ -407,7 +410,7 @@ rr_table |>
   kable_styling(full_width = FALSE, position = "center")
 ```
 
-## 4b. Interpretation & Epidemiological Insights
+## 4b. Interpretation and Epidemiological Insights
 
 The Poisson regression results provide insight into factors associated with shooting counts across New York City.
 
