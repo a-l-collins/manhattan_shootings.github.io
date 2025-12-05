@@ -7,6 +7,7 @@ navbar:
      href: data_description.html
    - text: "Report"
      href: full_report.html
+         
   right:
     - text: "alissa"
       href: 
@@ -18,6 +19,9 @@ navbar:
       href: Streetlamp_tehsuan.html
     - text: "Time Analysis"
       href: Ainsel_Weather.html
+    - icon: fa-github fa-lg
+      href: https://github.com/a-l-collins/manhattan_shootings.github.io.git
+
 output:
   html_document:
-    theme: flatly
+    theme: journal
