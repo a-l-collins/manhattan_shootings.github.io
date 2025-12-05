@@ -12,7 +12,7 @@ output:
 
 ## Purpose and Data Sources for NYC Shooting Location Analysis
 
-This project analyzes shooting incidents in New York City with a focus on geographic and location-based patterns. The analysis uses two NYPD datasets: the historic dataset covering incidents from 2006 through 2024, and the 2025 year-to-date dataset providing the most recent records. Together, these data allow examination of long-term patterns and current trends in shootings across boroughs and location types.
+This project analyzes shooting incidents in New York City with a focus on geographic and location-based patterns. The analysis uses two NYPD datasets: the historic dataset covering incidents from 2015 through 2024, and the 2025 year-to-date dataset providing the most recent records. Together, these data allow examination of long-term patterns and current trends in shootings across boroughs and location types.
 
 The analysis includes descriptive summaries of borough-level shooting counts, location-based breakdowns (inside versus outside), and a Poisson regression model evaluating whether shooting counts vary by location type and victim race across boroughs. These approaches provide insight into how environmental and demographic factors relate to shooting incidents in New York City.
 
@@ -42,6 +42,11 @@ census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63",
 ```{r load-data}
 dat1 = read.csv("./Data folder/Shooting_Historic.csv")
 dat2 = read.csv("./Data folder/Shooting_2025.csv")
+
+# Filter historic data to 2015 onwards
+dat1 = dat1 |>
+  mutate(year = as.numeric(substr(OCCUR_DATE, nchar(OCCUR_DATE) - 3, nchar(OCCUR_DATE)))) |>
+  filter(year >= 2015)
 
 dat_all = bind_rows(
   dat1 |> mutate(source = "historic"),
@@ -84,9 +89,9 @@ dat_all_sf = dat_all |>
 
 This section presents descriptive summaries of shooting incidents across the five boroughs and by location type. It focuses on understanding basic patterns in counts and distributions before moving into spatial visualization and regression modeling.
 
-## 2a. Borough-Level Shooting Counts (2006–2024)
+## 2a. Borough-Level Shooting Counts (2015–2024)
 
-This subsection summarizes the total number of shooting incidents for each borough using the historic dataset from 2006 to 2024.
+This subsection summarizes the total number of shooting incidents for each borough using the historic dataset from 2015 to 2024.
 
 ```{r boro-historic}
 dat1_boro = dat1 |>
@@ -103,13 +108,13 @@ dat1_boro |>
   kable(
     col.names = c("Borough", "Total Shootings"),
     align = c("l", "r"),
-    caption = "Shooting Incident Counts by Borough (2006 to 2024)"
+    caption = "Shooting Incident Counts by Borough (2015 to 2024)"
   ) |>
   kable_styling(full_width = FALSE, position = "center")
 ```
 
 * **Comments**
-Brooklyn and the Bronx have the highest total shooting counts in the historic period, together accounting for the majority of incidents citywide. Queens and Manhattan show moderate levels, while Staten Island has the fewest shootings. This distribution reflects substantial variation in shooting activity across boroughs.
+Brooklyn and the Bronx have the highest total shooting counts in this period, together accounting for the majority of incidents citywide. Queens and Manhattan show moderate levels, while Staten Island has the fewest shootings. This distribution reflects substantial variation in shooting activity across boroughs.
 
 
 ## 2b. Borough-Level Shooting Counts (All Years Combined)
@@ -161,7 +166,7 @@ dat1_location |>
   kable(
     col.names = c("Location", "Total Shootings"),
     align = c("l", "r"),
-    caption = "Shooting Incidents by Location Type (2006 to 2024)"
+    caption = "Shooting Incidents by Location Type (2015 to 2024)"
   ) |>
   kable_styling(full_width = FALSE, position = "center")
 ```
@@ -237,7 +242,7 @@ This section presents interactive maps that visually display geographic differen
 
 ## 3a. Map of Total Shootings by Borough (All Years)
 
-This map shows all shooting incidents from 2006 through 2025 as clustered points overlaid on borough boundaries.
+This map shows all shooting incidents from 2015 through 2025 as clustered points overlaid on borough boundaries.
 
 ```{r map-setup, results='hide'}
 nyc_boro = tigris::counties(state = "NY", cb = TRUE) |>
