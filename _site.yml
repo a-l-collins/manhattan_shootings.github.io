@@ -9,10 +9,10 @@ navbar:
      href: full_report.html
          
   right:
-    - text: "alissa"
-      href: 
-    - text: "miho"
-      href:
+    - text: "Location-based Patterns"
+      href: alissa_location.html
+    - text: "Fatal Shooting Incidents"
+      href: Miho_Murder-flag.html
     - text: "Predictor 1: Green Space"
       href: Kino_Green_Space.html
     - text: "Predictor 2: Unlit Street Lamps"
