@@ -13,9 +13,9 @@ navbar:
       href: 
     - text: "miho"
       href:
-    - text: "kino"
-      href:
-    - text: "Predictors 2: Broken street lamp"
+    - text: "Predictor 1: Green Space"
+      href: Kino_Green_Space.html
+    - text: "Predictors 2: Broken Street Lamp"
       href: Streetlamp_tehsuan.html
     - text: "Time Analysis"
       href: Ainsel_Weather.html
