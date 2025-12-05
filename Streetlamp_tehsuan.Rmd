@@ -35,7 +35,8 @@ library(dplyr)
 # Step2: Get an API Key
 # Note: You only need to do this once per device using install = TRUE.
 
-census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE)
+census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE) |> 
+  invisible()
 ```
 
 ```{r message = FALSE, echo = FALSE, results='hide'}
