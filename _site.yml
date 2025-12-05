@@ -9,8 +9,8 @@ navbar:
   right:
     - text: "alissa"
       href: 
-    - text: "miho"
-      href:
+    - text: "Analysis of Fatal Shooting Outcomes in New York City"
+      href: Miho_Murder-flag.html
     - text: "Predictor 1: Green Space"
       href: Kino_Green_Space.html
     - text: "Predictor 2: Unlit Street Lamps"
