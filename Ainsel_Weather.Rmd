@@ -8,7 +8,7 @@ output:
     
 ---
 
-Social cond itions impact whether or not shootings occur, and this can be seen when analyzing *when* the shooting took place-- whether that be hour of the day, day of the week, month of the year, or the year itself.
+Social conditions impact whether or not shootings occur, and this can be seen when analyzing *when* the shooting took place-- whether that be hour of the day, day of the week, month of the year, or the year itself.
 
 <img src="images/time_1.jpg" style="width:75%">
 
