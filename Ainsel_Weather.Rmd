@@ -63,34 +63,10 @@ shooting <- bind_rows(shooting_2025, shooting_h) %>%
     day = as.numeric(day),
     year = as.numeric(year)) %>% 
   distinct(incident_key, .keep_all = TRUE) %>% 
-  filter(boro == "MANHATTAN")
-
-# creating a version with multiple daily incidents:
-shooting_d <- bind_rows(shooting_2025, shooting_h) %>% 
-  separate_wider_delim(occur_date, delim = "/", names_sep = ".") %>% 
-  rename(
-    month = occur_date.1,
-    day = occur_date.2,
-    year = occur_date.3,
-    time = occur_time
-  ) %>% 
-  mutate(
-    month = case_match(month,
-      "01" ~ "January",
-      "02" ~ "February",
-      "03" ~ "March",
-      "04" ~ "April",
-      "05" ~ "May",
-      "06" ~ "June",
-      "07" ~ "July",
-      "08" ~ "August",
-      "09" ~ "September",
-      "10" ~ "October",
-      "11" ~ "November",
-      "12" ~ "December"),
-    day = as.numeric(day),
-    year = as.numeric(year)) %>% 
-  filter(boro == "MANHATTAN")
+  filter(boro == "MANHATTAN",
+         # removing two keys that are listed as manhattan but actually aren't
+         !incident_key %in% c(279138121, 272105041)) %>% 
+  drop_na(latitude, longitude, day, time)
 
 # ran once to pull table from website
 # url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
