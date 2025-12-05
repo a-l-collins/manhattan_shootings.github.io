@@ -327,16 +327,15 @@ div.tocify {
         <li>
   <a href="data_description.html">Data</a>
 </li>
-<li>
-  <a href="full_report.html">Report</a>
-</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown-header">alissa</li>
 <li class="dropdown-header">miho</li>
-<li class="dropdown-header">kino</li>
 <li>
-  <a href="Streetlamp_tehsuan.html">Predictors 2: Broken street lamp</a>
+  <a href="Kino_Green_Space.html">Predictor 1: Green Space</a>
+</li>
+<li>
+  <a href="Streetlamp_tehsuan.html">Predictors 2: Broken Street Lamp</a>
 </li>
 <li>
   <a href="Ainsel_Weather.html">Time Analysis</a>
@@ -423,34 +422,10 @@ shooting &lt;- bind_rows(shooting_2025, shooting_h) %&gt;%
     day = as.numeric(day),
     year = as.numeric(year)) %&gt;% 
   distinct(incident_key, .keep_all = TRUE) %&gt;% 
-  filter(boro == &quot;MANHATTAN&quot;)
-
-# creating a version with multiple daily incidents:
-shooting_d &lt;- bind_rows(shooting_2025, shooting_h) %&gt;% 
-  separate_wider_delim(occur_date, delim = &quot;/&quot;, names_sep = &quot;.&quot;) %&gt;% 
-  rename(
-    month = occur_date.1,
-    day = occur_date.2,
-    year = occur_date.3,
-    time = occur_time
-  ) %&gt;% 
-  mutate(
-    month = case_match(month,
-      &quot;01&quot; ~ &quot;January&quot;,
-      &quot;02&quot; ~ &quot;February&quot;,
-      &quot;03&quot; ~ &quot;March&quot;,
-      &quot;04&quot; ~ &quot;April&quot;,
-      &quot;05&quot; ~ &quot;May&quot;,
-      &quot;06&quot; ~ &quot;June&quot;,
-      &quot;07&quot; ~ &quot;July&quot;,
-      &quot;08&quot; ~ &quot;August&quot;,
-      &quot;09&quot; ~ &quot;September&quot;,
-      &quot;10&quot; ~ &quot;October&quot;,
-      &quot;11&quot; ~ &quot;November&quot;,
-      &quot;12&quot; ~ &quot;December&quot;),
-    day = as.numeric(day),
-    year = as.numeric(year)) %&gt;% 
-  filter(boro == &quot;MANHATTAN&quot;)
+  filter(boro == &quot;MANHATTAN&quot;,
+         # removing two keys that are listed as manhattan but actually aren&#39;t
+         !incident_key %in% c(279138121, 272105041)) %&gt;% 
+  drop_na(latitude, longitude, day, time)
 
 # ran once to pull table from website
 # url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;

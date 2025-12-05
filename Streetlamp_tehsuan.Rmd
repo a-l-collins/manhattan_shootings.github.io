@@ -1,12 +1,23 @@
 ---
 title: "Investigating the Link Between Unlit Street Lamps and Gun Violence"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
 ---
 
-# Part 1: Description: interactive map visualizations
+<img src="./Figures/pexels-muffin-1629998.jpg" style="width:80%">
 
-This section prepares the data for spatial analysis and visualizes the distribution of the outcome (shooting incidents) and the primary predictor (street lights out) across Manhattan census tracts.
+This research is inspired by a simple, yet profound question: Does a lack of working street lights make neighborhoods less safe?
 
+For years, city planners have assumed that more light means less crime. However, the history of public lighting is complicated.We recognize that past research (Yared, 2021) shows how street lamps have been used in powerful, and sometimes negative, ways to control people. This reminds us that light is not just a utility; it's a critical tool tied to social equity and surveillance.
+
+With this context, our project tackles a specific and urgent issue: we are using modern crime data to measure the direct link between failing infrastructure (street lights that are out) and serious violence (shooting incidents) in Manhattan neighborhoods.
+
+By looking at crime that happens during the day compared to crime that happens at night, our goal is to find clear, data-driven answers that can help city officials decide where to spend money to fix lights and how to make every block safer.
+
+# Part 1: Interactive map visualizations
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
 # Step1: Downlaod the library
 # Note: install.packages(c("tidycensus", "tidyverse", "sf", "mapview", "geepack"))
@@ -100,7 +111,7 @@ street_light_sf_all <- st_as_sf(
 )
 ```
 
-### Cross-sectional data: 2025
+### Cross-sectional analysis in 2025
 
 This map visualizes the total number of shooting incidents that occurred and total number of "street light out" service requests reported within each Manhattan census tract in 2025.
 
@@ -144,7 +155,7 @@ mapview(
 )
 ```
 
-### Cumulative data: 2020 to 2025
+### Longitudinal analysis during 2020 to 2025
 
 This map visualizes the total number of shooting incidents that occurred and total number of "street light out" service requests reported within each Manhattan census tract over the entire study period.
 
@@ -204,7 +215,7 @@ This part models the association between the count of street lights out and the 
 
 This analysis uses standard Poisson Regression to estimate the association between the number of street lights out and the number of shooting cases in each census tract for the year 2025.
 
-```{r message = FALSE, echo = FALSE}
+```{r message = FALSE}
 # Calculate 2025 Shooting Counts Per Tract
 shootings_per_tract_25 <- 
   st_join(manhattan_pop, shooting25_sf) |>
@@ -244,7 +255,7 @@ exp(coef(poisson_model_2025))
 
 This analysis uses a Generalized Estimating Equation (GEE) Poisson Model to assess the association over multiple years (2020-2025).
 
-```{r message = FALSE, echo = FALSE}
+```{r message = FALSE}
 all_geoids <- manhattan_pop |> st_drop_geometry() |> dplyr::select(GEOID)
 all_years <- tibble(created_year = 2020:2025)
 
@@ -425,7 +436,7 @@ knitr::kable(
 )
 ```
 
-### Longitudinal GEE analysis
+### Longitudinal analysis during 2020 to 2025
 
 #### Day time
 ```{r message = FALSE, results='hide'}
