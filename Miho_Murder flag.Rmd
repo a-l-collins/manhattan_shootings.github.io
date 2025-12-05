@@ -33,8 +33,9 @@ library(kableExtra)
 library(broom)
 ```
 
-```{r, echo = FALSE, eval = FALSE}
-census_api_key("71edc420ec0b86cf5a54c3fc72727f4149467e79")
+```{r, message=FALSE, echo=FALSE}
+census_api_key("71edc420ec0b86cf5a54c3fc72727f4149467e79",  install = TRUE, overwrite = TRUE) |> 
+  invisible()
 ```
 
 ```{r}
