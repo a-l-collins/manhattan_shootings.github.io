@@ -40,8 +40,9 @@ Additional data was required in order to conduct the time analyses, street lamp 
 * [NYC Parks](https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data) to identify and locate green spaces 
 
 **Street Lamp**
-- Census Tract Boundaries through TidyCensus R package
 
+- Census Tract Boundaries through TidyCensus R package
+- [Street Lamp]() were used to identify reports of "street light out" service requests
 
 ### **The Team**
 
