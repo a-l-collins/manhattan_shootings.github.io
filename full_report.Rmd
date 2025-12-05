@@ -21,7 +21,7 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 1. How do the social/environmental conditions of each region influence shooting rates?
 1. Does location influence shooting rates?
 1. Does victim gender influence shooting rates?
-1. Do these patterns change based on whether the shooting had been fatal?
+1. How do demographic characteristics and location patterns relate to the fatal shooting incidents?
 
 ## **Discussion**
 
