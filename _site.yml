@@ -11,8 +11,8 @@ navbar:
   right:
     - text: "alissa"
       href: 
-    - text: "miho"
-      href:
+    - text: "Analysis of Fatal Shooting Outcomes in New York City"
+      href: Miho_Murder-flag.html
     - text: "kino"
       href:
     - text: "Predictors 2: Broken street lamp"

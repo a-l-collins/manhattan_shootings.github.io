@@ -35,7 +35,7 @@ library(kableExtra)
 library(broom)
 ```
 
-```{r}
+```{r, echo = FALSE}
 census_api_key("71edc420ec0b86cf5a54c3fc72727f4149467e79")
 ```
 
