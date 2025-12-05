@@ -3,6 +3,8 @@ title: "Investigating the Link Between Unlit Street Lamps and Gun Violence"
 output: html_document
 ---
 
+<img src="./Figures/pexels-muffin-1629998.jpg" style="width:80%">
+
 # Part 1: Description: interactive map visualizations
 
 This section prepares the data for spatial analysis and visualizes the distribution of the outcome (shooting incidents) and the primary predictor (street lights out) across Manhattan census tracts.

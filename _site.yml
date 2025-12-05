@@ -15,7 +15,7 @@ navbar:
       href:
     - text: "kino"
       href:
-    - text: "Predictors 2: Broken street lamp"
+    - text: "Predictors 2: Unlit Street Lamps"
       href: Streetlamp_tehsuan.html
     - text: "Time Analysis"
       href: Ainsel_Weather.html
