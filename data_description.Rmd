@@ -20,7 +20,7 @@ library(httr)
 
 #### *The Data*
 
-[description of data]
+Shooting data was downloaded from NYC Open Data, with two separate datasets for (2025 data)[https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data] and for (historical (2026-2024) data)[https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data]. When combined, the two datasets have a total of 3,123 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
 
 #### *Cleaning the Data*
 
@@ -73,12 +73,12 @@ Data on when sunrise and sunset occurs for each day of the year was pulled from 
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
 # Ran once to pull table from website:
-# url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
+url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
 
-# daylight <- read_html(url) %>% 
-  # html_table() %>% 
-  # as.data.frame() %>% 
-  # janitor::clean_names()
+daylight <- read_html(url) |>  
+  html_table() %>% 
+  as.data.frame() %>% 
+  janitor::clean_names()
 
 # write.table(daylight, file = "./Data Folder/Daylight_Hours.txt", quote = F, row.names = F, col.names = T, sep = "\t")
 
@@ -147,6 +147,11 @@ daylight_shooting <- left_join(shooting, daylight, by = c("month", "day")) %>%
     )
   ) %>% 
   select(incident_key, month, day, year, hour, minute, sunrise_hour, sunrise_minute, sunset_hour, sunset_minute, daylight, everything())
+
+readr::write_csv(
+  daylight_shooting, 
+  file = "./Data Folder/Daylight_Shooting_Stratified.csv"
+)
 ```
 
 #### *Day of the Week Data*
