@@ -5,11 +5,19 @@ navbar:
   left:
    - text: "Data"
      href: data_description.html
+   - text: "Summary Report"
+     href: full_report.html
          
   right:
+<<<<<<< HEAD
     - text: "alissa"
       href: 
     - text: "Analysis of Fatal Shooting Outcomes in New York City"
+=======
+    - text: "Location-based Patterns"
+      href: alissa_location.html
+    - text: "Fatal Shooting Incidents"
+>>>>>>> 5a54c4c00ff2f744d51fdd5f5af72d2908bfbe09
       href: Miho_Murder-flag.html
     - text: "Predictor 1: Green Space"
       href: Kino_Green_Space.html

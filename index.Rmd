@@ -10,7 +10,7 @@ output:
 
 ### **About**
 
-Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the (Midtown Manhattan mass shooting)[https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls] in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of socioeconomic, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
+Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the [Midtown Manhattan mass shooting](https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls) in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of neighborhood factors, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
 
 ### **Map of Manhattan Shootings**
 
@@ -22,17 +22,27 @@ Based on data from 2006-September 2025. Hover over each point to see [whatever i
 
 #### *Main Data*
 
-Shooting data was downloaded from NYC Open Data, with two separate datasets for (2025 data)[https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data] and for (historical (2026-2024) data)[https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data]. When combined, the two datasets have a total of 3,123 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
+Shooting data was downloaded from NYC Open Data, with two separate datasets for [2025 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data) and for [historical (2026-2024) data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data). When combined, the two datasets have a total of 3,103 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
 
 #### *Other Sources*
 
-Additional data was required in order to conduct the time analyses:
+Additional data was required in order to conduct the time analyses, street lamp analysis, and green space analysis:
 
-- Data on when sunrise and sunset occurs for each day of the year was pulled from (New York City Photo Safari)[https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html]. 
-- Calendars for 2006-2025 were downloaded and added to a single excel workbook from (General Blue)[https://www.generalblue.com/calendar].
-- Weather data from the (NOAA)[https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html] was used to measure the temperature for when shootings occurred.
+**Time Analysis**
 
+* Data on when sunrise and sunset occurs for each day of the year was pulled from [New York City Photo Safari](https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html). 
+* Calendars for 2006-2025 were downloaded and added to a single excel workbook from [General Blue](https://www.generalblue.com/calendar).
+* Weather data from the [NOAA](https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html) was used to measure the temperature for when shootings occurred.
 
+**Green Space** 
+
+* Census Tract boundaries through `TidyCensus R package` to geocode and map
+* [NYC Parks](https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data) to identify and locate green spaces 
+
+**Street Lamp**
+
+- Census Tract Boundaries through TidyCensus R package
+- [Street Lamp]() were used to identify reports of "street light out" service requests
 
 ### **The Team**
 
