@@ -14,9 +14,9 @@ navbar:
       href:
     - text: "kino"
       href:
-    - text: "te hsuan"
-      href:
-    - text: "ainsel"
+    - text: "Predictors 2: Broken street lamp"
+      href: Streetlamp_tehsuan.html
+    - text: "Time Analysis"
       href: Ainsel_Weather.html
 output:
   html_document:

@@ -329,9 +329,11 @@ div.tocify {
         <li class="dropdown-header">alissa</li>
 <li class="dropdown-header">miho</li>
 <li class="dropdown-header">kino</li>
-<li class="dropdown-header">te hsuan</li>
 <li>
-  <a href="Ainsel_Weather.html">ainsel</a>
+  <a href="Streetlamp_tehsuan.html">Predictors 2: Broken street lamp</a>
+</li>
+<li>
+  <a href="Ainsel_Weather.html">Time Analysis</a>
 </li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -359,7 +361,20 @@ library(httr)
 <h3><strong>Shooting Data</strong></h3>
 <div id="the-data" class="section level4">
 <h4><em>The Data</em></h4>
-<p>[description of data]</p>
+<p>Shooting data was downloaded from NYC Open Data, with two separate
+datasets for (2025 data)[<a
+href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data"
+class="uri">https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data</a>]
+and for (historical (2026-2024) data)[<a
+href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data"
+class="uri">https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data</a>].
+When combined, the two datasets have a total of 3,123 independent
+observations across 24 variables. These variables include information
+such as the age/gender/race of the perpetrator, the age/gender/race of
+the victim, the day on which the shooting took place, the time at which
+it took place, its general location (whether or not it was indoors,
+whether or not it took place within an apartment), and whether or not it
+was a fatal shooting.</p>
 </div>
 <div id="cleaning-the-data" class="section level4">
 <h4><em>Cleaning the Data</em></h4>

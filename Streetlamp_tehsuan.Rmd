@@ -1,0 +1,670 @@
+---
+title: "tehsuan_gun shoot"
+author: "Te-Hsuan Huang"
+date: "2025-11-13"
+output: html_document
+---
+
+# Part 1: Description
+
+### Step1: Downlaod the library
+Note: install.packages(c("tidycensus", "tidyverse", "sf", "mapview", "geepack"))
+```{r message = FALSE, echo = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidycensus)
+library(sf)
+library(mapview)
+library(dplyr)
+```
+
+### Step2: Get an API Key
+Note: You only need to do this once per device using install = TRUE.
+
+```{r eval=FALSE,message = FALSE, echo = FALSE}
+census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE)
+```
+
+### Step 3: Prepare census data
+```{r message = FALSE, echo = FALSE, results='hide'}
+manhattan_pop <- get_acs(
+  geography = "tract",
+  variables = "B01003_001",
+  state = "NY",
+  county = "061",
+  geometry = TRUE,
+  year = 2023
+)|> 
+  dplyr::select(GEOID, geometry)
+
+# Ensure consistent Coordinate Reference System (CRS)
+manhattan_pop <- st_transform(manhattan_pop, crs = 4326)
+```
+
+
+### Step 4: Interactive map
+
+#### Year: 2025
+```{r message = FALSE, echo = FALSE}
+# --- A. 2025 Shooting Incident Points ---
+shooting25_df =
+  read_csv("./Data Folder/Shooting_2025.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |> 
+  drop_na(latitude) 
+
+shooting25_sf <- st_as_sf(
+  shooting25_df,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- B. 2025 Broken Street Light Points ---
+street_light_data_25 <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city =="MANHATTAN") |> 
+  filter(
+    descriptor == "Street Light Out"
+  ) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj)
+  ) |>
+  # Filter only for the year 2025
+  filter(created_year == 2025) |> 
+  filter(latitude != 0, longitude != 0)
+
+street_light_sf_25 <- st_as_sf(
+  street_light_data_25,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- C. Calculate 2025 Counts Per Tract ---
+lights_joined_25 <- st_join(manhattan_pop, street_light_sf_25)
+lights_per_tract_25 <- lights_joined_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_BROKEN_LIGHTS_2025 = sum(!is.na(descriptor)), 
+    .groups = 'drop'
+  ) |>
+  st_drop_geometry()
+
+# --- D. Final Map Data for 2025 ---
+final_map_2025 <- manhattan_pop |> 
+  left_join(lights_per_tract_25, by = "GEOID") |> 
+  mutate(N_BROKEN_LIGHTS_2025 = replace_na(N_BROKEN_LIGHTS_2025, 0))
+
+# --- E. Map Visualization for 2025 ---
+mapview(
+  final_map_2025, 
+  zcol = "N_BROKEN_LIGHTS_2025", 
+  layer.name = "Broken Street Lights per Tract (2025)"
+) + 
+mapview(
+  shooting25_sf, 
+  col.regions = "red", 
+  cex = 3, 
+  layer.name = "2025 Shooting Case Location"
+)
+
+```
+
+#### Year: 2020 to 2024
+```{r message = FALSE, echo = FALSE}
+# --- A. CUMULATIVE Shooting Incident Points ---
+shooting11_24_df = 
+  read_csv("./Data Folder/Shooting_Historic.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |>
+  filter(!incident_key %in% c(279138121, 272105041)) |> 
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  filter(created_year >= 2020 & created_year <= 2024) |>
+  drop_na(latitude)
+
+shooting11_24_sf_hist <- st_as_sf(
+  shooting11_24_df,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- B. CUMULATIVE Broken Street Light Points ---
+street11_24_light_data_hist <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city =="MANHATTAN") |> 
+  filter(
+    descriptor == "Street Light Out"
+  ) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  filter(created_year >= 2020 & created_year <= 2024) |>
+  filter(latitude != 0, longitude != 0)
+  
+street11_24_light_sf_hist <- st_as_sf(
+  street11_24_light_data_hist,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- C. Calculate CUMULATIVE Counts Per Census Tract ---
+lights_joined_hist_24 <- st_join(manhattan_pop, street11_24_light_sf_hist)
+lights_per_tract_hist_24 <- lights_joined_hist_24 |>
+  group_by(GEOID) |>
+  summarize(
+    N_BROKEN_LIGHTS_CUM_24 = sum(!is.na(descriptor)), 
+    .groups = 'drop'
+  )
+
+shootings_joined_hist_24 <- st_join(manhattan_pop, shooting11_24_sf_hist)
+shootings_per_tract_hist_24 <- shootings_joined_hist_24 |>
+  group_by(GEOID) |>
+  summarize(
+    N_SHOOTINGS_CUM_24 = sum(!is.na(incident_key)),
+    .groups = 'drop'
+  )
+
+# --- D. Final Map Data for CUMULATIVE 2020-2024 ---
+final_cumulative_data_24 <- manhattan_pop |> 
+  left_join(lights_per_tract_hist_24 |> st_drop_geometry(), by = "GEOID") |> 
+  left_join(shootings_per_tract_hist_24 |> st_drop_geometry(), by = "GEOID") |> 
+  mutate(
+    N_BROKEN_LIGHTS_CUM_24 = replace_na(N_BROKEN_LIGHTS_CUM_24, 0),
+    N_SHOOTINGS_CUM_24 = replace_na(N_SHOOTINGS_CUM_24, 0)
+  )
+
+# --- E. Map Visualization for CUMULATIVE 2020-2024 ---
+mapview(
+  final_cumulative_data_24, 
+  zcol = "N_BROKEN_LIGHTS_CUM_24", 
+  layer.name = "Cumulative Broken Street Lights (2011-2024)"
+) + 
+mapview(
+  shooting11_24_sf_hist, 
+  col.regions = "red", 
+  cex = 3, 
+  layer.name = "Cumulative Shooting Case Locations (2011-2024)"
+)
+```
+
+#### Year: 2020 to 2025
+```{r message = FALSE, echo = FALSE}
+shooting25_df =
+  read_csv("Data Folder/Shooting_2025.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |> 
+  drop_na(latitude) |> 
+  mutate(statistical_murder_flag = case_match(statistical_murder_flag,
+                                             "N" ~ FALSE,
+                                             "Y" ~ TRUE))
+shooting06_24_df = 
+  read_csv("Data Folder/Shooting_Historic.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN",
+         !incident_key %in% c(279138121, 272105041)) |> 
+  drop_na(latitude)
+
+merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df)
+
+# --- A. CUMULATIVE Shooting Incident Points ---
+shooting11_25_df = 
+  merged_shooting_df |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |>
+  filter(!incident_key %in% c(279138121, 272105041)) |> 
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  # FILTER CHANGE: Filter for the cumulative range (2011 to 2025)
+  filter(created_year >= 2020 & created_year <= 2025) |>
+  drop_na(latitude)
+
+shooting11_25_sf_hist <- st_as_sf(
+  shooting11_25_df,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- B. CUMULATIVE Broken Street Light Points ---
+street11_25_light_data_hist <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city =="MANHATTAN") |> 
+  filter(
+    descriptor == "Street Light Out"
+  ) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  # FILTER CHANGE: Filter for the cumulative range (2011 to 2025)
+  filter(created_year >= 2020 & created_year <= 2025) |>
+  filter(latitude != 0, longitude != 0)
+  
+street11_25_light_sf_hist <- st_as_sf(
+  street11_25_light_data_hist,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- C. Calculate CUMULATIVE Counts Per Census Tract ---
+lights_joined_hist_25 <- st_join(manhattan_pop, street11_25_light_sf_hist)
+lights_per_tract_hist_25 <- lights_joined_hist_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_BROKEN_LIGHTS_CUM_25 = sum(!is.na(descriptor)), 
+    .groups = 'drop'
+  )
+
+shootings_joined_hist_25 <- st_join(manhattan_pop, shooting11_25_sf_hist)
+shootings_per_tract_hist_25 <- shootings_joined_hist_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_SHOOTINGS_CUM_25 = sum(!is.na(incident_key)),
+    .groups = 'drop'
+  )
+
+# --- D. Final Map Data for CUMULATIVE 2020-2025 ---
+final_cumulative_data_25 <- manhattan_pop |> 
+  left_join(lights_per_tract_hist_25 |> st_drop_geometry(), by = "GEOID") |> 
+  left_join(shootings_per_tract_hist_25 |> st_drop_geometry(), by = "GEOID") |> 
+  mutate(
+    N_BROKEN_LIGHTS_CUM_25 = replace_na(N_BROKEN_LIGHTS_CUM_25, 0),
+    N_SHOOTINGS_CUM_25 = replace_na(N_SHOOTINGS_CUM_25, 0)
+  )
+
+# --- E. Map Visualization for CUMULATIVE 2020-2025 ---
+mapview(
+  final_cumulative_data_25, 
+  zcol = "N_BROKEN_LIGHTS_CUM_25", 
+  layer.name = "Cumulative Broken Street Lights (2020-2025)"
+) + 
+mapview(
+  shooting11_25_sf_hist, 
+  col.regions = "red", 
+  cex = 3, 
+  layer.name = "Cumulative Shooting Case Locations (2020-2025)"
+)
+```
+
+# Part 2: Statistical analysis
+
+### Cross sectional analysis in 2025
+```{r message = FALSE, echo = FALSE}
+shootings_joined_25 <- 
+  st_join(manhattan_pop, shooting25_sf)
+
+shootings_per_tract_25 <- 
+  shootings_joined_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_SHOOTINGS_2025 = sum(!is.na(incident_key)),
+    .groups = 'drop'
+  ) |>
+  st_drop_geometry()
+
+final_cross_section_2025 <- 
+  manhattan_pop |> 
+  left_join(shootings_per_tract_25, by = "GEOID") |> 
+  left_join(lights_per_tract_25, by = "GEOID") |> 
+  mutate(
+    N_BROKEN_LIGHTS_2025 = replace_na(N_BROKEN_LIGHTS_2025, 0),
+    N_SHOOTINGS_2025 = replace_na(N_SHOOTINGS_2025, 0)
+  ) |>
+  st_drop_geometry()
+
+# =========================================================
+# STEP 2: POISSON REGRESSION MODEL
+# =========================================================
+
+# 1. Run the Poisson Regression Model
+poisson_model_2025 <- glm(
+  N_SHOOTINGS_2025 ~ N_BROKEN_LIGHTS_2025, 
+  family = poisson, 
+  data = final_cross_section_2025
+)
+
+# 2. Print the Model Summary
+# This output will show the coefficients, standard errors, and p-values.
+summary(poisson_model_2025)
+
+# 3. Calculate Incidence Rate Ratios (IRR)
+# An IRR of 1.10 means a one-unit increase in the predictor (broken lights) 
+# is associated with a 10% increase in the incident rate (shooting cases).
+exp(coef(poisson_model_2025))
+```
+
+### Longitudinal analysis during 2020 to 2025
+```{r message = FALSE, echo = FALSE}
+all_geoids <- manhattan_pop |> st_drop_geometry() |> dplyr::select(GEOID)
+all_years <- tibble(created_year = 2020:2025)
+
+base_grid <- all_geoids |>
+  cross_join(all_years) |>
+  mutate(GEOID = as.character(GEOID))
+
+# =========================================================
+# STEP 2: CALCULATE ANNUAL SHOOTING COUNTS (2020-2025)
+# (REVISED to use merged_shooting_df)
+# =========================================================
+
+# START with the pre-merged and cleaned data frame provided by you.
+shooting20_25_df_filtered <- merged_shooting_df |>
+  # Apply date parsing and filter for the 2020-2025 period
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  filter(created_year >= 2020 & created_year <= 2025) |>
+  drop_na(latitude, longitude)
+
+# Convert to SF object for spatial join
+shooting20_25_sf <- st_as_sf(
+  shooting20_25_df_filtered,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# Spatial Join and Summarize Counts per GEOID and Year
+shootings_per_year <- st_join(manhattan_pop, shooting20_25_sf) |>
+  st_drop_geometry() |>
+  filter(!is.na(incident_key)) |> 
+  group_by(GEOID, created_year) |>
+  summarize(
+    N_SHOOTINGS = n(),
+    .groups = 'drop'
+  ) |>
+  mutate(GEOID = as.character(GEOID))
+
+
+# =========================================================
+# STEP 3: CALCULATE ANNUAL BROKEN LIGHT COUNTS (2020-2025)
+# =========================================================
+
+# Spatial Join and Summarize Counts per GEOID and Year
+lights_per_year <- st_join(manhattan_pop, street11_25_light_sf_hist) |>
+  st_drop_geometry() |>
+  filter(!is.na(descriptor)) |> 
+  group_by(GEOID, created_year) |>
+  summarize(
+    N_BROKEN_LIGHTS = n(),
+    .groups = 'drop'
+  ) |>
+  mutate(GEOID = as.character(GEOID))
+
+# =========================================================
+# STEP 4: MERGE AND CLEAN LONGITUDINAL DATA
+# =========================================================
+
+# Merge the count tables with the base grid to fill in all zero counts
+final_longitudinal_data <- base_grid |>
+  left_join(shootings_per_year, by = c("GEOID", "created_year")) |>
+  left_join(lights_per_year, by = c("GEOID", "created_year")) |>
+  mutate(
+    N_SHOOTINGS = replace_na(N_SHOOTINGS, 0),
+    N_BROKEN_LIGHTS = replace_na(N_BROKEN_LIGHTS, 0)
+  )
+
+# =========================================================
+# STEP 5: GENERALIZED ESTIMATING EQUATION (GEE) MODEL
+# =========================================================
+
+poisson_gee_model <- geepack::geeglm(
+  N_SHOOTINGS ~ N_BROKEN_LIGHTS + created_year, 
+  data = final_longitudinal_data,
+  id = GEOID,
+  family = poisson,
+  corstr = "unstructured" 
+)
+
+# Output Model Summary and Incidence Rate Ratios
+summary(poisson_gee_model)
+exp(coef(poisson_gee_model))
+```
+
+# Part 3: Stratified analysis
+
+### Cross sectional analysis in 2025
+
+#### Step 1: Prepare dataset
+```{r message = FALSE, echo = FALSE, results='hide'}
+# 1. DEFINE TIME CLASSIFICATION FUNCTION
+# This function classifies shootings into 
+# DAY (6 AM to 7:59 PM) and NIGHT (8 PM to 5:59 AM)
+classify_time_period <- function(time_string) {
+  time_obj <- lubridate::hms(time_string)
+  hour <- lubridate::hour(time_obj)
+  
+  if (hour >= 20 | hour < 6) {
+    return("NIGHT")
+  } else {
+    return("DAY")
+  }
+}
+
+# 2. PREPARE STRATIFIED 2025 SHOOTING DATA
+shooting25_df_stratified <- merged_shooting_df |>
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj),
+    TIME_PERIOD = sapply(occur_time, classify_time_period) 
+  ) |>
+  filter(created_year == 2025)
+
+# Separate into spatial objects (sf)
+shooting25_sf_DAY <- shooting25_df_stratified |> filter(TIME_PERIOD == "DAY") |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+shooting25_sf_NIGHT <- shooting25_df_stratified |> filter(TIME_PERIOD == "NIGHT") |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+# 3. CALCULATE STRATIFIED COUNTS PER TRACT (2025)
+shootings_per_tract_25_DAY <- st_join(manhattan_pop, shooting25_sf_DAY) |>
+  group_by(GEOID) |>
+  summarize(N_SHOOTINGS_2025 = sum(!is.na(incident_key)), .groups = 'drop') |>
+  st_drop_geometry()
+
+shootings_per_tract_25_NIGHT <- st_join(manhattan_pop, shooting25_sf_NIGHT) |>
+  group_by(GEOID) |>
+  summarize(N_SHOOTINGS_2025 = sum(!is.na(incident_key)), .groups = 'drop') |>
+  st_drop_geometry()
+```
+
+#### Step 2: see if there is association between broken street lamp and shooting case
+
+##### Day time
+```{r message = FALSE, code_folding=TRUE, results='hide'}
+final_cross_section_2025_DAY <- manhattan_pop |> 
+  left_join(shootings_per_tract_25_DAY, by = "GEOID") |> 
+  left_join(lights_per_tract_25, by = "GEOID") |> # lights_per_tract_25 calculated in Part 2
+  mutate(
+    N_BROKEN_LIGHTS_2025 = replace_na(N_BROKEN_LIGHTS_2025, 0),
+    N_SHOOTINGS_2025 = replace_na(N_SHOOTINGS_2025, 0)
+  ) |>
+  st_drop_geometry()
+
+poisson_model_2025_DAY <- glm(
+  N_SHOOTINGS_2025 ~ N_BROKEN_LIGHTS_2025, 
+  family = poisson, 
+  data = final_cross_section_2025_DAY
+)
+summary(poisson_model_2025_DAY)
+print(exp(coef(poisson_model_2025_DAY)))
+```
+
+##### Night time
+```{r message = FALSE, code_folding=TRUE, results='hide'}
+final_cross_section_2025_NIGHT <- manhattan_pop |> 
+  left_join(shootings_per_tract_25_NIGHT, by = "GEOID") |> 
+  left_join(lights_per_tract_25, by = "GEOID") |> 
+  mutate(
+    N_BROKEN_LIGHTS_2025 = replace_na(N_BROKEN_LIGHTS_2025, 0),
+    N_SHOOTINGS_2025 = replace_na(N_SHOOTINGS_2025, 0)
+  ) |>
+  st_drop_geometry()
+
+poisson_model_2025_NIGHT <- glm(
+  N_SHOOTINGS_2025 ~ N_BROKEN_LIGHTS_2025, 
+  family = poisson, 
+  data = final_cross_section_2025_NIGHT
+)
+summary(poisson_model_2025_NIGHT)
+print(exp(coef(poisson_model_2025_NIGHT)))
+```
+
+#### Step 3: Compare through the table
+```{r message = FALSE, echo = FALSE}
+extract_metrics <- function(model, predictor = "N_BROKEN_LIGHTS_2025") {
+  s <- summary(model)
+  
+  if (predictor %in% rownames(s$coefficients)) {
+    beta <- coef(model)[predictor]
+    p_value <- s$coefficients[predictor, "Pr(>|z|)"]
+    
+    return(list(Beta = beta, P_value = p_value))
+  } else {
+    return(list(Beta = NA, P_value = NA)) 
+  }
+}
+
+day_metrics <- extract_metrics(poisson_model_2025_DAY)
+night_metrics <- extract_metrics(poisson_model_2025_NIGHT)
+
+summary_table <- tibble(
+  `Time Period` = c("Daytime (6 AM - 7:59 PM)", "Nighttime (8 PM - 5:59 AM)"),
+  `IRR (Broken Lights)` = c(exp(day_metrics$Beta), exp(night_metrics$Beta)),
+  `P-value` = c(day_metrics$P_value, night_metrics$P_value)
+)
+
+knitr::kable(
+  summary_table,
+  caption = "Poisson Regression Results: Broken Street Lights vs. Shooting Cases (2025)",
+  col.names = c("Time Period", "IRR (Incidence Rate Ratios)", "P-value")
+)
+```
+
+
+### Longitudinal sectional analysis during 2025
+
+#### Step 1: Prepare the dataset
+```{r message = FALSE, echo = FALSE, results='hide'}
+shooting20_25_df_stratified <- shooting20_25_df_filtered |>
+  mutate(TIME_PERIOD = sapply(occur_time, classify_time_period))
+
+# Separate into DAY/NIGHT data frames
+shooting_data_DAY <- shooting20_25_df_stratified |> filter(TIME_PERIOD == "DAY")
+shooting_data_NIGHT <- shooting20_25_df_stratified |> filter(TIME_PERIOD == "NIGHT")
+
+# 2. CALCULATE STRATIFIED ANNUAL SHOOTING COUNTS (2020-2025)
+
+# --- DAYTIME Shooting Counts ---
+shooting_sf_DAY <- st_as_sf(shooting_data_DAY, coords = c("longitude", "latitude"), crs = 4326)
+shootings_per_year_DAY <- st_join(manhattan_pop, shooting_sf_DAY) |>
+  st_drop_geometry() |>
+  filter(!is.na(incident_key)) |> 
+  group_by(GEOID, created_year) |>
+  summarize(N_SHOOTINGS = n(), .groups = 'drop') |>
+  mutate(GEOID = as.character(GEOID))
+
+# --- NIGHTTIME Shooting Counts ---
+shooting_sf_NIGHT <- st_as_sf(shooting_data_NIGHT, coords = c("longitude", "latitude"), crs = 4326)
+shootings_per_year_NIGHT <- st_join(manhattan_pop, shooting_sf_NIGHT) |>
+  st_drop_geometry() |>
+  filter(!is.na(incident_key)) |> 
+  group_by(GEOID, created_year) |>
+  summarize(N_SHOOTINGS = n(), .groups = 'drop') |>
+  mutate(GEOID = as.character(GEOID))
+
+
+# 3. MERGE AND CLEAN STRATIFIED LONGITUDINAL DATA
+
+# --- DAYTIME Merged Data ---
+final_longitudinal_data_DAY <- base_grid |>
+  left_join(shootings_per_year_DAY, by = c("GEOID", "created_year")) |>
+  left_join(lights_per_year, by = c("GEOID", "created_year")) |>
+  mutate(
+    N_SHOOTINGS = replace_na(N_SHOOTINGS, 0),
+    N_BROKEN_LIGHTS = replace_na(N_BROKEN_LIGHTS, 0)
+  )
+
+# --- NIGHTTIME Merged Data ---
+final_longitudinal_data_NIGHT <- base_grid |>
+  left_join(shootings_per_year_NIGHT, by = c("GEOID", "created_year")) |>
+  left_join(lights_per_year, by = c("GEOID", "created_year")) |>
+  mutate(
+    N_SHOOTINGS = replace_na(N_SHOOTINGS, 0),
+    N_BROKEN_LIGHTS = replace_na(N_BROKEN_LIGHTS, 0)
+  )
+```
+
+#### Step 2: See if there is association between broken street lamp and shooting case
+
+##### Day time
+```{r message = FALSE, code_folding=TRUE, results='hide'}
+poisson_gee_model_DAY <- geepack::geeglm(
+  N_SHOOTINGS ~ N_BROKEN_LIGHTS + created_year, 
+  data = final_longitudinal_data_DAY,
+  id = GEOID, 
+  family = poisson,
+  corstr = "unstructured" 
+)
+
+summary(poisson_gee_model_DAY)
+print(exp(coef(poisson_gee_model_DAY)))
+```
+
+##### Night time
+```{r message = FALSE, code_folding=TRUE, results='hide'}
+poisson_gee_model_NIGHT <- geepack::geeglm(
+  N_SHOOTINGS ~ N_BROKEN_LIGHTS + created_year, 
+  data = final_longitudinal_data_NIGHT,
+  id = GEOID, 
+  family = poisson,
+  corstr = "unstructured" 
+)
+
+summary(poisson_gee_model_NIGHT)
+print(exp(coef(poisson_gee_model_NIGHT)))
+```
+
+#### Step 3: Compare through the table
+```{r message = FALSE, echo = FALSE}
+extract_metrics_gee <- function(model, predictor = "N_BROKEN_LIGHTS") {
+  s <- summary(model)
+  
+  if (predictor %in% rownames(s$coefficients)) {
+    beta <- s$coefficients[predictor, "Estimate"]
+    p_value <- s$coefficients[predictor, "Pr(>|W|)"]
+    
+    return(list(Beta = beta, P_value = p_value))
+  } else {
+    return(list(Beta = NA, P_value = NA)) 
+  }
+}
+
+day_metrics_gee <- extract_metrics_gee(poisson_gee_model_DAY)
+night_metrics_gee <- extract_metrics_gee(poisson_gee_model_NIGHT)
+
+summary_table_gee <- tibble(
+  `Time Period` = c("Daytime (6 AM - 7:59 PM)", "Nighttime (8 PM - 5:59 AM)"),
+  `IRR (Broken Lights)` = c(exp(day_metrics_gee$Beta), exp(night_metrics_gee$Beta)),
+  `P-value` = c(day_metrics_gee$P_value, night_metrics_gee$P_value)
+)
+
+knitr::kable(
+  summary_table_gee,
+  caption = "GEE Poisson Regression Results: Broken Street Lights vs. Shooting Cases (2020-2025)",
+  col.names = c("Time Period", "IRR (Incidence Rate Ratios)", "P-value (Wald Test)")
+)
+```
+
