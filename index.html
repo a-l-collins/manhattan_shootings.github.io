@@ -13,7 +13,7 @@
 
 <title>Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in Manhattan</title>
 
-<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
@@ -323,16 +323,15 @@ div.tocify {
         <li>
   <a href="data_description.html">Data</a>
 </li>
-<li>
-  <a href="full_report.html">Report</a>
-</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown-header">alissa</li>
 <li class="dropdown-header">miho</li>
-<li class="dropdown-header">kino</li>
 <li>
-  <a href="Streetlamp_tehsuan.html">Predictors 2: Broken street lamp</a>
+  <a href="Kino_Green_Space.html">Predictor 1: Green Space</a>
+</li>
+<li>
+  <a href="Streetlamp_tehsuan.html">Predictor 2: Unlit Street Lamps</a>
 </li>
 <li>
   <a href="Ainsel_Weather.html">Time Analysis</a>
@@ -362,15 +361,13 @@ of Gun Violence Correlates in Manhattan</h1>
 <div id="about" class="section level3">
 <h3><strong>About</strong></h3>
 <p>Gun violence is a persistent public health crisis in the United
-States. In New York City, for example, we had the (Midtown Manhattan
-mass shooting)[<a
-href="https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls"
-class="uri">https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls</a>]
-in July 2025. It showed us that even our busiest, most protected
-neighborhoods are impacted by gun violence. We set out to perform a
-descriptive exploration of socioeconomic, geographic, and temporal
-factors that are potentially positively or negatively associated with
-firearm shootings in Manhattan, NYC.</p>
+States. In New York City, for example, we had the <a
+href="https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls">Midtown
+Manhattan mass shooting</a> in July 2025. It showed us that even our
+busiest, most protected neighborhoods are impacted by gun violence. We
+set out to perform a descriptive exploration of neighborhood factors,
+geographic, and temporal factors that are potentially positively or
+negatively associated with firearm shootings in Manhattan, NYC.</p>
 </div>
 <div id="map-of-manhattan-shootings" class="section level3">
 <h3><strong>Map of Manhattan Shootings</strong></h3>
@@ -383,38 +380,45 @@ firearm shootings in Manhattan, NYC.</p>
 <div id="main-data" class="section level4">
 <h4><em>Main Data</em></h4>
 <p>Shooting data was downloaded from NYC Open Data, with two separate
-datasets for (2025 data)[<a
-href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data"
-class="uri">https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data</a>]
-and for (historical (2026-2024) data)[<a
-href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data"
-class="uri">https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data</a>].
-When combined, the two datasets have a total of 3,123 independent
-observations across 24 variables. These variables include information
-such as the age/gender/race of the perpetrator, the age/gender/race of
-the victim, the day on which the shooting took place, the time at which
-it took place, its general location (whether or not it was indoors,
-whether or not it took place within an apartment), and whether or not it
-was a fatal shooting.</p>
+datasets for <a
+href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data">2025
+data</a> and for <a
+href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data">historical
+(2026-2024) data</a>. When combined, the two datasets have a total of
+3,103 independent observations across 24 variables. These variables
+include information such as the age/gender/race of the perpetrator, the
+age/gender/race of the victim, the day on which the shooting took place,
+the time at which it took place, its general location (whether or not it
+was indoors, whether or not it took place within an apartment), and
+whether or not it was a fatal shooting.</p>
 </div>
 <div id="other-sources" class="section level4">
 <h4><em>Other Sources</em></h4>
-<p>Additional data was required in order to conduct the time
-analyses:</p>
+<p>Additional data was required in order to conduct the time analyses,
+street lamp analysis, and green space analysis:</p>
+<p><strong>Time Analysis</strong></p>
 <ul>
 <li>Data on when sunrise and sunset occurs for each day of the year was
-pulled from (New York City Photo Safari)[<a
-href="https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
-class="uri">https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html</a>].</li>
+pulled from <a
+href="https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html">New
+York City Photo Safari</a>.</li>
 <li>Calendars for 2006-2025 were downloaded and added to a single excel
-workbook from (General Blue)[<a
-href="https://www.generalblue.com/calendar"
-class="uri">https://www.generalblue.com/calendar</a>].</li>
-<li>Weather data from the (NOAA)[<a
-href="https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html"
-class="uri">https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html</a>]
+workbook from <a href="https://www.generalblue.com/calendar">General
+Blue</a>.</li>
+<li>Weather data from the <a
+href="https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html">NOAA</a>
 was used to measure the temperature for when shootings occurred.</li>
 </ul>
+<p><strong>Green Space</strong></p>
+<ul>
+<li>Census Tract boundaries through <code>TidyCensus R package</code> to
+geocode and map</li>
+<li><a
+href="https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data">NYC
+Parks</a> to identify and locate green spaces</li>
+</ul>
+<p><strong>Street Lamp</strong> - Census Tract Boundaries through
+TidyCensus R package</p>
 </div>
 </div>
 <div id="the-team" class="section level3">
