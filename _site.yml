@@ -5,6 +5,8 @@ navbar:
   left:
    - text: "Data"
      href: data_description.html
+   - text: "Summary Report"
+     href: full_report.html
          
   right:
     - text: "alissa"
