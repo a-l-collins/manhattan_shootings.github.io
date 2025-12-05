@@ -144,7 +144,7 @@ final_map_2025 <- manhattan_pop |>
 mapview(
   final_map_2025, 
   zcol = "N_BROKEN_LIGHTS_2025", 
-  layer.name = "Broken Street Lights per Tract (2025)",
+  layer.name = "Unlit Street Lights per Tract (2025)",
   alpha.regions = 0.7
 ) + 
 mapview(
@@ -196,7 +196,7 @@ final_cumulative_data_25 <- manhattan_pop |>
 mapview(
   final_cumulative_data_25, 
   zcol = "N_BROKEN_LIGHTS_CUM_25", 
-  layer.name = "Cumulative Broken Street Lights (2020-2025)",
+  layer.name = "Cumulative Unlit Street Lights (2020-2025)",
   alpha.regions = 0.7
 ) + 
 mapview(
@@ -431,7 +431,7 @@ summary_table <- tibble(
 
 knitr::kable(
   summary_table,
-  caption = "Poisson Regression Results: Broken Street Lights vs. Shooting Cases (2025) Stratified by Day Time",
+  caption = "Poisson Regression Results: Unlit Street Lights vs. Shooting Cases (2025) Stratified by Day Time",
   col.names = c("Time Period", "IRR (Incidence Rate Ratios)", "P-value")
 )
 ```
@@ -538,7 +538,7 @@ summary_table_gee <- tibble(
 
 knitr::kable(
   summary_table_gee,
-  caption = "GEE Poisson Regression Results: Broken Street Lights vs. Shooting Cases (2020-2025) Stratified by Day Time",
+  caption = "GEE Poisson Regression Results: Unlit Street Lights vs. Shooting Cases (2020-2025) Stratified by Day Time",
   col.names = c("Time Period", "IRR (Incidence Rate Ratios)", "P-value (Wald Test)")
 )
 ```
