@@ -11,11 +11,19 @@ navbar:
   right:
     - text: "alissa"
       href: 
+<<<<<<< HEAD
     - text: "Analysis of Fatal Shooting Outcomes in New York City"
       href: Miho_Murder-flag.html
     - text: "kino"
       href:
     - text: "Predictors 2: Broken street lamp"
+=======
+    - text: "miho"
+      href:
+    - text: "Predictor 1: Green Space"
+      href: Kino_Green_Space.html
+    - text: "Predictors 2: Broken Street Lamp"
+>>>>>>> 42ec6befc1d50dfba84bd0b82695c207b7c55b92
       href: Streetlamp_tehsuan.html
     - text: "Time Analysis"
       href: Ainsel_Weather.html
