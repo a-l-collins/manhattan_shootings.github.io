@@ -1,0 +1,9 @@
+---
+title: "Geographic and Location-Based Patterns of Shooting Incidents in NYC"
+author: "Alissa Shams Orchi"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
