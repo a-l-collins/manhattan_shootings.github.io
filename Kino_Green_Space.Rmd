@@ -9,7 +9,7 @@ output:
     
 ---
 
-![](park1.jpg)
+![](images/park1.jpg)
 
 Based on published literature, we were interested in performing a descriptive analysis on green spaces and gun shooting incidents. For example, previous research by [Kondo et al.](https://pubmed.ncbi.nlm.nih.gov/28481962/) found that tree coverage had a negative association with gun assaults. In this project, we operationalized parks in NYC as a proxy for green space by aggregating the total number of park acres within each census tract in Manhattan. Shooting incident data were compiled separately for 2025 (until September), 2006–2024 historical data, and a merged dataset. For the purposes of this descriptive analysis, we created separate maps for each shooting data set for most analyses, as the 2025 data set was incomplete.
 
@@ -394,7 +394,7 @@ cor.test(
 
 * Overall, our findings are descriptive and highlight spatial patterns rather than causal effects. consistent with prior literature suggesting that greater green space may be protective against gun violence.
 
-![](park2.jpg)
+![](images/park2.jpg)
 
 
 # Sensitivity analysis: maps for census tracts **with** and **without** parks
