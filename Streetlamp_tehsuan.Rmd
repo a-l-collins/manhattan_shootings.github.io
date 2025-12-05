@@ -1,0 +1,302 @@
+---
+title: "tehsuan_gun shoot"
+author: "Te-Hsuan Huang"
+date: "2025-11-13"
+output: html_document
+---
+
+# Part 1: description
+
+### Step1: Downlaod the library
+install.packages(c("tidycensus", "tidyverse", "sf", "mapview"))
+**Please run the above code if you do this map at the first time**
+```{r}
+library(tidyverse)
+library(tidycensus)
+library(sf)
+library(mapview)
+library(dplyr)
+```
+
+### Step2: Get an API Key
+Set the Key: Set your key using the census_api_key() function so R can securely access the data. You only need to do this once per device using install = TRUE.
+
+```{r eval=FALSE}
+census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE)
+```
+
+### Step 3: Prepare census data
+```{r}
+manhattan_pop <- get_acs(
+  geography = "tract",
+  variables = "B01003_001",
+  state = "NY",
+  county = "061",
+  geometry = TRUE,
+  year = 2023
+)|> 
+  dplyr::select(GEOID, geometry)
+
+# Ensure consistent Coordinate Reference System (CRS)
+manhattan_pop <- st_transform(manhattan_pop, crs = 4326)
+```
+
+
+### Step 4: Interactive map
+
+#### Year: 2025
+```{r}
+# --- A. 2025 Shooting Incident Points ---
+shooting25_df =
+  read_csv("./Data Folder/Shooting_2025.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |> 
+  drop_na(latitude) 
+
+shooting25_sf <- st_as_sf(
+  shooting25_df,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- B. 2025 Broken Street Light Points ---
+street_light_data_25 <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city =="MANHATTAN") |> 
+  filter(
+    descriptor == "Street Light Out"
+  ) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  # Filter only for the year 2025
+  filter(created_year == 2025) |> 
+  filter(latitude != 0, longitude != 0)
+
+street_light_sf_25 <- st_as_sf(
+  street_light_data_25,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- C. Calculate 2025 Counts Per Tract ---
+lights_joined_25 <- st_join(manhattan_pop, street_light_sf_25)
+lights_per_tract_25 <- lights_joined_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_BROKEN_LIGHTS_2025 = sum(!is.na(descriptor)), 
+    .groups = 'drop'
+  ) |>
+  st_drop_geometry()
+
+# --- D. Final Map Data for 2025 ---
+final_map_2025 <- manhattan_pop |> 
+  left_join(lights_per_tract_25, by = "GEOID") |> 
+  mutate(N_BROKEN_LIGHTS_2025 = replace_na(N_BROKEN_LIGHTS_2025, 0))
+
+# --- E. Map Visualization for 2025 ---
+mapview(
+  final_map_2025, 
+  zcol = "N_BROKEN_LIGHTS_2025", 
+  layer.name = "Broken Street Lights per Tract (2025)"
+) + 
+mapview(
+  shooting25_sf, 
+  col.regions = "red", 
+  cex = 3, 
+  layer.name = "2025 Shooting Case Location"
+)
+
+```
+
+#### Year: 2020 to 2024
+```{r}
+# --- A. CUMULATIVE Shooting Incident Points ---
+shooting11_24_df = 
+  read_csv("./Data Folder/Shooting_Historic.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |>
+  filter(!incident_key %in% c(279138121, 272105041)) |> 
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  filter(created_year >= 2020 & created_year <= 2024) |>
+  drop_na(latitude)
+
+shooting11_24_sf_hist <- st_as_sf(
+  shooting11_24_df,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- B. CUMULATIVE Broken Street Light Points ---
+street11_24_light_data_hist <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city =="MANHATTAN") |> 
+  filter(
+    descriptor == "Street Light Out"
+  ) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  filter(created_year >= 2020 & created_year <= 2024) |>
+  filter(latitude != 0, longitude != 0)
+  
+street11_24_light_sf_hist <- st_as_sf(
+  street11_24_light_data_hist,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- C. Calculate CUMULATIVE Counts Per Census Tract ---
+lights_joined_hist_24 <- st_join(manhattan_pop, street11_24_light_sf_hist)
+lights_per_tract_hist_24 <- lights_joined_hist_24 |>
+  group_by(GEOID) |>
+  summarize(
+    N_BROKEN_LIGHTS_CUM_24 = sum(!is.na(descriptor)), 
+    .groups = 'drop'
+  )
+
+shootings_joined_hist_24 <- st_join(manhattan_pop, shooting11_24_sf_hist)
+shootings_per_tract_hist_24 <- shootings_joined_hist_24 |>
+  group_by(GEOID) |>
+  summarize(
+    N_SHOOTINGS_CUM_24 = sum(!is.na(incident_key)),
+    .groups = 'drop'
+  )
+
+# --- D. Final Map Data for CUMULATIVE 2020-2024 ---
+final_cumulative_data_24 <- manhattan_pop |> 
+  left_join(lights_per_tract_hist_24 |> st_drop_geometry(), by = "GEOID") |> 
+  left_join(shootings_per_tract_hist_24 |> st_drop_geometry(), by = "GEOID") |> 
+  mutate(
+    N_BROKEN_LIGHTS_CUM_24 = replace_na(N_BROKEN_LIGHTS_CUM_24, 0),
+    N_SHOOTINGS_CUM_24 = replace_na(N_SHOOTINGS_CUM_24, 0)
+  )
+
+# --- E. Map Visualization for CUMULATIVE 2020-2024 ---
+mapview(
+  final_cumulative_data_24, 
+  zcol = "N_BROKEN_LIGHTS_CUM_24", 
+  layer.name = "Cumulative Broken Street Lights (2011-2024)"
+) + 
+mapview(
+  shooting11_24_sf_hist, 
+  col.regions = "red", 
+  cex = 3, 
+  layer.name = "Cumulative Shooting Case Locations (2011-2024)"
+)
+```
+
+#### Year: 2020 to 2025
+```{r}
+shooting25_df =
+  read_csv("Data Folder/Shooting_2025.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |> 
+  drop_na(latitude) |> 
+  mutate(statistical_murder_flag = case_match(statistical_murder_flag,
+                                             "N" ~ FALSE,
+                                             "Y" ~ TRUE))
+shooting06_24_df = 
+  read_csv("Data Folder/Shooting_Historic.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN",
+         !incident_key %in% c(279138121, 272105041)) |> 
+  drop_na(latitude)
+
+merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df)
+
+# --- A. CUMULATIVE Shooting Incident Points ---
+shooting11_25_df = 
+  merged_shooting_df |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |>
+  filter(!incident_key %in% c(279138121, 272105041)) |> 
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  # FILTER CHANGE: Filter for the cumulative range (2011 to 2025)
+  filter(created_year >= 2020 & created_year <= 2025) |>
+  drop_na(latitude)
+
+shooting11_25_sf_hist <- st_as_sf(
+  shooting11_25_df,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- B. CUMULATIVE Broken Street Light Points ---
+street11_25_light_data_hist <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city =="MANHATTAN") |> 
+  filter(
+    descriptor == "Street Light Out"
+  ) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj) 
+  ) |>
+  # FILTER CHANGE: Filter for the cumulative range (2011 to 2025)
+  filter(created_year >= 2020 & created_year <= 2025) |>
+  filter(latitude != 0, longitude != 0)
+  
+street11_25_light_sf_hist <- st_as_sf(
+  street11_25_light_data_hist,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
+
+# --- C. Calculate CUMULATIVE Counts Per Census Tract ---
+lights_joined_hist_25 <- st_join(manhattan_pop, street11_25_light_sf_hist)
+lights_per_tract_hist_25 <- lights_joined_hist_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_BROKEN_LIGHTS_CUM_25 = sum(!is.na(descriptor)), 
+    .groups = 'drop'
+  )
+
+shootings_joined_hist_25 <- st_join(manhattan_pop, shooting11_25_sf_hist)
+shootings_per_tract_hist_25 <- shootings_joined_hist_25 |>
+  group_by(GEOID) |>
+  summarize(
+    N_SHOOTINGS_CUM_25 = sum(!is.na(incident_key)),
+    .groups = 'drop'
+  )
+
+# --- D. Final Map Data for CUMULATIVE 2020-2025 ---
+final_cumulative_data_25 <- manhattan_pop |> 
+  left_join(lights_per_tract_hist_25 |> st_drop_geometry(), by = "GEOID") |> 
+  left_join(shootings_per_tract_hist_25 |> st_drop_geometry(), by = "GEOID") |> 
+  mutate(
+    N_BROKEN_LIGHTS_CUM_25 = replace_na(N_BROKEN_LIGHTS_CUM_25, 0),
+    N_SHOOTINGS_CUM_25 = replace_na(N_SHOOTINGS_CUM_25, 0)
+  )
+
+# --- E. Map Visualization for CUMULATIVE 2020-2025 ---
+mapview(
+  final_cumulative_data_25, 
+  zcol = "N_BROKEN_LIGHTS_CUM_25", 
+  layer.name = "Cumulative Broken Street Lights (2020-2025)"
+) + 
+mapview(
+  shooting11_25_sf_hist, 
+  col.regions = "red", 
+  cex = 3, 
+  layer.name = "Cumulative Shooting Case Locations (2020-2025)"
+)
+```
+
+# Part 2: Statistical anlysis
