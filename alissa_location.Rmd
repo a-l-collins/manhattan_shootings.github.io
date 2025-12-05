@@ -238,11 +238,11 @@ All boroughs show more outside shootings than inside shootings among incidents w
 
 # 3. Geographic Visualization
 
-This section presents interactive maps that visually display geographic differences in shooting incidents across boroughs. Points are clustered for improved performance; click on clusters to zoom in and view individual incidents.
+This section presents interactive maps that visually display geographic differences in shooting incidents across boroughs. Each point represents an individual shooting incident.
 
 ## 3a. Map of Total Shootings by Borough (All Years)
 
-This map shows all shooting incidents from 2015 through 2025 as clustered points overlaid on borough boundaries.
+This map shows all shooting incidents from 2015 through 2025 as scatter points overlaid on borough boundaries.
 
 ```{r map-setup, results='hide'}
 nyc_boro = tigris::counties(state = "NY", cb = TRUE) |>
@@ -275,16 +275,15 @@ mapview(
 ) + 
 mapview(
   dat_all_sf,
-  cex = 2,
+  cex = 1,
   alpha = 0.5,
   col.regions = "red",
-  layer.name = "All Shootings",
-  clusterOptions = markerClusterOptions()
+  layer.name = "All Shootings"
 )
 ```
 
 * **Comments**
-Each red point represents an individual shooting incident. Points are clustered for visualization; click clusters to zoom in and see individual locations. The geographic concentration in Brooklyn and the Bronx is clearly visible. The borough shading indicates total counts, while clustered points show the spatial distribution of incidents.
+Each red point represents an individual shooting incident from 2015 to 2025. The geographic concentration in Brooklyn and the Bronx is clearly visible, showing the spatial clustering of gun violence in these boroughs. The borough shading indicates total counts, while scatter points show the exact incident locations.
 
 
 ## 3b. Map Comparing Inside vs Outside Shootings (All Years)
@@ -307,19 +306,17 @@ mapview(
 ) + 
 mapview(
   dat_inside_sf,
-  cex = 3,
+  cex = 2,
   alpha = 0.6,
   col.regions = "blue",
-  layer.name = "Inside (Blue)",
-  clusterOptions = markerClusterOptions()
+  layer.name = "Inside (Blue)"
 ) +
 mapview(
   dat_outside_sf,
-  cex = 3,
+  cex = 2,
   alpha = 0.6,
   col.regions = "orange",
-  layer.name = "Outside (Orange)",
-  clusterOptions = markerClusterOptions()
+  layer.name = "Outside (Orange)"
 )
 ```
 

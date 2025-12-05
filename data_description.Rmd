@@ -12,6 +12,10 @@ output:
 library(tidyverse)
 library(rvest)
 library(httr)
+library(tidycensus)
+library(sf)
+library(tigris)
+library(mapview)
 
 # add any other libraries used
 ```
@@ -20,11 +24,11 @@ library(httr)
 
 #### *The Data*
 
-Shooting data was downloaded from NYC Open Data, with two separate datasets for (2025 data)[https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data] and for (historical (2026-2024) data)[https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data]. When combined, the two datasets have a total of 3,123 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
+Shooting data was downloaded from NYC Open Data, with two separate datasets for [2025 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data) and for [historical (2026-2024) data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data). When combined, the two datasets have a total of 3,103 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
 
 #### *Cleaning the Data*
 
-The shooting data was available in a historical (2006-2024) format, and a 2025 format. We changed the `statistical_murder_flag` designations in the 2025 variant of the data to match the historical data before binding the two datasets together. We also made sure to only include Manhattan incidents, and ensured that each incident key within `incident_key` only occurred once, to remove repeat inputs (to account for multiple victims or perpetrators) and prevent them from skewing the data.
+The shooting data was available in a historical (2006-2024) format, and a 2025 format. We changed the `statistical_murder_flag` designations in the 2025 variant of the data to match the historical data before binding the two datasets together. We also made sure to only include Manhattan incidents, and ensured that each incident key within `incident_key` only occurred once, to remove repeat inputs (to account for multiple victims or perpetrators) and prevent them from skewing the data. Both data sets of shooting incidents were filtered to exclude missing latitude/longitude, which are key variables in the predictors data sets. After mapping, `incident_key` = 279138121 and 272105041 from `shooting06_24_df` were excluded because their latitudes/longitudes don't match with the Manhattan borough.
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
 # THIS IS BASED ON AINSEL'S PROCESS. Look it over and see if your process agrees; if it doesn't, text or something so we can work it out
@@ -62,14 +66,16 @@ shooting <- bind_rows(shooting_2025, shooting_h) %>%
     day = as.numeric(day),
     year = as.numeric(year)) %>% 
   distinct(incident_key, .keep_all = TRUE) %>% 
-  filter(boro == "MANHATTAN")
+  filter(boro == "MANHATTAN",
+         !incident_key %in% c(279138121, 272105041)) |> 
+  drop_na(latitude)
 ```
 
 ### **Time Data**
 
 #### *Daylight Data*
 
-Data on when sunrise and sunset occurs for each day of the year was pulled from (New York City Photo Safari)[https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html]. It was scraped from the website a single time before being saved in a table, and that table was used for subsequent analysis. This data was then cleaned, merged with the shooting data created above, the sunrise/sunset/time variables cleaned so they both match and are in a 24-hour format, and a `daylight` variable was created to indicate whether each individual shooting occurred within its date's provided sunrise/sunset times or not.
+Data on when sunrise and sunset occurs for each day of the year was pulled from [New York City Photo Safari](https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html). It was scraped from the website a single time before being saved in a table, and that table was used for subsequent analysis. This data was then cleaned, merged with the shooting data created above, the sunrise/sunset/time variables cleaned so they both match and are in a 24-hour format, and a `daylight` variable was created to indicate whether each individual shooting occurred within its date's provided sunrise/sunset times or not.
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
 # Ran once to pull table from website:
@@ -156,7 +162,7 @@ readr::write_csv(
 
 #### *Day of the Week Data*
 
-Calendars for 2006-2025 were downloaded and added to a single excel workbook from (General Blue)[https://www.generalblue.com/calendar].
+Calendars for 2006-2025 were downloaded and added to a single excel workbook from [General Blue](https://www.generalblue.com/calendar).
 
 The following functions were created in order to read all calendars into a single dataframe:
 
@@ -359,6 +365,62 @@ pandemic_shooting <- left_join(weather, shooting, by = c("month", "day", "year")
                        12 ~ "December")
     )
 ```
+
+### **Park Data**
+
+`parks_df` identifies property managed partially or solely by [NYC Parks](https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data). We dropped the `NAs` of parks without addresses, as this is a key component of my green space analysis.
+
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+parks_df =
+  read_csv("Data Folder/Parks_Properties_Oct2025.csv", na = c("NA", ".", "")) |> 
+  janitor::clean_names() |> 
+  select(acquisitiondate, borough, zipcode, address, 
+         eapply, location, acres, typecategory, retired) |> 
+  rename(boro = borough) |> 
+  drop_na(address) |> 
+   mutate(
+      boro = case_when(
+      boro == "B" ~ "Brooklyn",
+      boro == "M" ~ "Manhattan",
+      boro == "Q" ~ "Queens",
+      boro == "R" ~ "Staten Island",
+      boro == "X" ~ "Bronx",
+      TRUE ~ NA_character_
+    ),
+  address = paste(address, "New York, NY", sep = ", ")
+  ) |>
+  filter(boro == "Manhattan") 
+```
+
+### **Manhattan Census Tract Data**
+
+Census tract boundaries were obtained from the U.S. Census Bureau using the TidyCensus R package. These tract boundaries allowed us to map green space locations and street lamp locations to the correct census tract while ensuring accurate spatial alignment with our shooting incidents data.
+
+```{r, warning = FALSE, eval = FALSE, message=FALSE, echo=FALSE}
+### Census data API key
+
+census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", 
+               install = TRUE, overwrite = TRUE) |> 
+  invisible()
+```
+
+```{r, message = FALSE, warning = FALSE, eval = FALSE, results='hide'}
+### Load Manhattan ACS population data
+
+# Download Manhattan population data with geometry
+manhattan_pop <- get_acs(
+  geography = "tract",
+  variables = "B01003_001",
+  state = "NY",
+  county = "061", 
+  geometry = TRUE,
+  year = 2023
+)
+
+###  `county = "061"` indicates Manhattan
+### `variables = "B01003_001"` indicates that we are requesting the total population estimate for each census tract from the ACS 5-year survey. This variable provides a count of all residents each census tract, which is useful for mapping population distribution and describing spatial relationships with parks and shooting incidents.
+```
+
 
 
 ### if anyone else used any other data, add your sections in here as well

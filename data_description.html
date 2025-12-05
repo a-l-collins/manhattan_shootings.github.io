@@ -330,9 +330,11 @@ div.tocify {
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown-header">alissa</li>
 <li class="dropdown-header">miho</li>
-<li class="dropdown-header">kino</li>
 <li>
-  <a href="Streetlamp_tehsuan.html">Predictors 2: Broken street lamp</a>
+  <a href="Kino_Green_Space.html">Predictor 1: Green Space</a>
+</li>
+<li>
+  <a href="Streetlamp_tehsuan.html">Predictors 2: Broken Street Lamp</a>
 </li>
 <li>
   <a href="Ainsel_Weather.html">Time Analysis</a>
@@ -362,6 +364,10 @@ div.tocify {
 <pre class="r"><code>library(tidyverse)
 library(rvest)
 library(httr)
+library(tidycensus)
+library(sf)
+library(tigris)
+library(mapview)
 
 # add any other libraries used</code></pre>
 </div>
@@ -370,19 +376,17 @@ library(httr)
 <div id="the-data" class="section level4">
 <h4><em>The Data</em></h4>
 <p>Shooting data was downloaded from NYC Open Data, with two separate
-datasets for (2025 data)[<a
-href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data"
-class="uri">https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data</a>]
-and for (historical (2026-2024) data)[<a
-href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data"
-class="uri">https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data</a>].
-When combined, the two datasets have a total of 3,123 independent
-observations across 24 variables. These variables include information
-such as the age/gender/race of the perpetrator, the age/gender/race of
-the victim, the day on which the shooting took place, the time at which
-it took place, its general location (whether or not it was indoors,
-whether or not it took place within an apartment), and whether or not it
-was a fatal shooting.</p>
+datasets for <a
+href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data">2025
+data</a> and for <a
+href="https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data">historical
+(2026-2024) data</a>. When combined, the two datasets have a total of
+3,103 independent observations across 24 variables. These variables
+include information such as the age/gender/race of the perpetrator, the
+age/gender/race of the victim, the day on which the shooting took place,
+the time at which it took place, its general location (whether or not it
+was indoors, whether or not it took place within an apartment), and
+whether or not it was a fatal shooting.</p>
 </div>
 <div id="cleaning-the-data" class="section level4">
 <h4><em>Cleaning the Data</em></h4>
@@ -393,7 +397,12 @@ data before binding the two datasets together. We also made sure to only
 include Manhattan incidents, and ensured that each incident key within
 <code>incident_key</code> only occurred once, to remove repeat inputs
 (to account for multiple victims or perpetrators) and prevent them from
-skewing the data.</p>
+skewing the data. Both data sets of shooting incidents were filtered to
+exclude missing latitude/longitude, which are key variables in the
+predictors data sets. After mapping, <code>incident_key</code> =
+279138121 and 272105041 from <code>shooting06_24_df</code> were excluded
+because their latitudes/longitudes don’t match with the Manhattan
+borough.</p>
 <pre class="r"><code># THIS IS BASED ON AINSEL&#39;S PROCESS. Look it over and see if your process agrees; if it doesn&#39;t, text or something so we can work it out
 shooting_h &lt;- read_csv(&quot;./Data Folder/Shooting_Historic.csv&quot;) %&gt;% 
   janitor::clean_names()
@@ -429,7 +438,9 @@ shooting &lt;- bind_rows(shooting_2025, shooting_h) %&gt;%
     day = as.numeric(day),
     year = as.numeric(year)) %&gt;% 
   distinct(incident_key, .keep_all = TRUE) %&gt;% 
-  filter(boro == &quot;MANHATTAN&quot;)</code></pre>
+  filter(boro == &quot;MANHATTAN&quot;,
+         !incident_key %in% c(279138121, 272105041)) |&gt; 
+  drop_na(latitude)</code></pre>
 </div>
 </div>
 <div id="time-data" class="section level3">
@@ -437,16 +448,16 @@ shooting &lt;- bind_rows(shooting_2025, shooting_h) %&gt;%
 <div id="daylight-data" class="section level4">
 <h4><em>Daylight Data</em></h4>
 <p>Data on when sunrise and sunset occurs for each day of the year was
-pulled from (New York City Photo Safari)[<a
-href="https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
-class="uri">https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html</a>].
-It was scraped from the website a single time before being saved in a
-table, and that table was used for subsequent analysis. This data was
-then cleaned, merged with the shooting data created above, the
-sunrise/sunset/time variables cleaned so they both match and are in a
-24-hour format, and a <code>daylight</code> variable was created to
-indicate whether each individual shooting occurred within its date’s
-provided sunrise/sunset times or not.</p>
+pulled from <a
+href="https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html">New
+York City Photo Safari</a>. It was scraped from the website a single
+time before being saved in a table, and that table was used for
+subsequent analysis. This data was then cleaned, merged with the
+shooting data created above, the sunrise/sunset/time variables cleaned
+so they both match and are in a 24-hour format, and a
+<code>daylight</code> variable was created to indicate whether each
+individual shooting occurred within its date’s provided sunrise/sunset
+times or not.</p>
 <pre class="r"><code># Ran once to pull table from website:
 url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;
 
@@ -531,9 +542,8 @@ readr::write_csv(
 <div id="day-of-the-week-data" class="section level4">
 <h4><em>Day of the Week Data</em></h4>
 <p>Calendars for 2006-2025 were downloaded and added to a single excel
-workbook from (General Blue)[<a
-href="https://www.generalblue.com/calendar"
-class="uri">https://www.generalblue.com/calendar</a>].</p>
+workbook from <a href="https://www.generalblue.com/calendar">General
+Blue</a>.</p>
 <p>The following functions were created in order to read all calendars
 into a single dataframe:</p>
 <pre class="r"><code>#&#39; Read in calendar
@@ -741,6 +751,55 @@ pandemic could be compared.</p>
                        12 ~ &quot;December&quot;)
     )</code></pre>
 </div>
+</div>
+<div id="park-data" class="section level3">
+<h3><strong>Park Data</strong></h3>
+<p><code>parks_df</code> identifies property managed partially or solely
+by <a
+href="https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data">NYC
+Parks</a>. We dropped the <code>NAs</code> of parks without addresses,
+as this is a key component of my green space analysis.</p>
+<pre class="r"><code>parks_df =
+  read_csv(&quot;Data Folder/Parks_Properties_Oct2025.csv&quot;, na = c(&quot;NA&quot;, &quot;.&quot;, &quot;&quot;)) |&gt; 
+  janitor::clean_names() |&gt; 
+  select(acquisitiondate, borough, zipcode, address, 
+         eapply, location, acres, typecategory, retired) |&gt; 
+  rename(boro = borough) |&gt; 
+  drop_na(address) |&gt; 
+   mutate(
+      boro = case_when(
+      boro == &quot;B&quot; ~ &quot;Brooklyn&quot;,
+      boro == &quot;M&quot; ~ &quot;Manhattan&quot;,
+      boro == &quot;Q&quot; ~ &quot;Queens&quot;,
+      boro == &quot;R&quot; ~ &quot;Staten Island&quot;,
+      boro == &quot;X&quot; ~ &quot;Bronx&quot;,
+      TRUE ~ NA_character_
+    ),
+  address = paste(address, &quot;New York, NY&quot;, sep = &quot;, &quot;)
+  ) |&gt;
+  filter(boro == &quot;Manhattan&quot;) </code></pre>
+</div>
+<div id="manhattan-census-tract-data" class="section level3">
+<h3><strong>Manhattan Census Tract Data</strong></h3>
+<p>Census tract boundaries were obtained from the U.S. Census Bureau
+using the TidyCensus R package. These tract boundaries allowed us to map
+green space locations and street lamp locations to the correct census
+tract while ensuring accurate spatial alignment with our shooting
+incidents data.</p>
+<pre class="r"><code>### Load Manhattan ACS population data
+
+# Download Manhattan population data with geometry
+manhattan_pop &lt;- get_acs(
+  geography = &quot;tract&quot;,
+  variables = &quot;B01003_001&quot;,
+  state = &quot;NY&quot;,
+  county = &quot;061&quot;, 
+  geometry = TRUE,
+  year = 2023
+)
+
+###  `county = &quot;061&quot;` indicates Manhattan
+### `variables = &quot;B01003_001&quot;` indicates that we are requesting the total population estimate for each census tract from the ACS 5-year survey. This variable provides a count of all residents each census tract, which is useful for mapping population distribution and describing spatial relationships with parks and shooting incidents.</code></pre>
 </div>
 <div
 id="if-anyone-else-used-any-other-data-add-your-sections-in-here-as-well"

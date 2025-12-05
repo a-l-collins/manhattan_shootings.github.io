@@ -91,6 +91,11 @@ merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df)
  
 * `parks_df` identifies property managed partially or solely by NYC Parks. We dropped the `NAs` of parks without addresses, as this is a key component of my green space analysis.
 
+[NYC Parks](https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data)
+
+[2025 shooting data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data)
+
+[historical: 2006-2024 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data)
 
 ```{r, message=FALSE, echo=FALSE}
 ### Census data API key
