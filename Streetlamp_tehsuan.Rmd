@@ -1,14 +1,14 @@
 ---
-title: "tehsuan_gun shoot"
-author: "Te-Hsuan Huang"
-date: "2025-11-13"
+title: "Investigating the Link Between Unlit Street Lamps and Gun Violence"
 output: html_document
 ---
 
 # Part 1: Description: interactive map visualizations
 
+This section prepares the data for spatial analysis and visualizes the distribution of the outcome (shooting incidents) and the primary predictor (street lights out) across Manhattan census tracts.
+
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
-### Step1: Downlaod the library
+# Step1: Downlaod the library
 # Note: install.packages(c("tidycensus", "tidyverse", "sf", "mapview", "geepack"))
 
 library(tidyverse)
@@ -19,15 +19,14 @@ library(dplyr)
 ```
 
 ```{r eval=FALSE,message = FALSE, echo = FALSE}
-### Step2: Get an API Key
+# Step2: Get an API Key
 # Note: You only need to do this once per device using install = TRUE.
 
 census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE)
 ```
 
 ```{r message = FALSE, echo = FALSE, results='hide'}
-### Step 3: Prepare census tract data
-
+# Step 3: Prepare census tract data
 manhattan_pop <- get_acs(
   geography = "tract",
   variables = "B01003_001",
@@ -42,9 +41,8 @@ manhattan_pop <- get_acs(
 manhattan_pop <- st_transform(manhattan_pop, crs = 4326)
 ```
 
-
 ```{r message = FALSE, echo = FALSE}
-#### Step 4: Load and Merge Shooting Data (Historical and Current)
+# Step 4: Load and Merge Shooting Data (Historical and Current)
 shooting25_df =
   read_csv("./Data Folder/Shooting_2025.csv", na = c("NA", ".", "")) |>
   janitor::clean_names() |> 
@@ -81,7 +79,7 @@ merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df) |>
 ```
 
 ```{r message = FALSE, echo = FALSE}
-#### Step 5: Load and Prepare Street Light Data
+# Step 5: Load and Prepare Street Light Data
 street_light_data_all <-
   read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
   janitor::clean_names() |> 
@@ -102,9 +100,12 @@ street_light_sf_all <- st_as_sf(
 )
 ```
 
-##### Year: 2025 data Only
+### Cross-sectional data: 2025
+
+This map visualizes the total number of shooting incidents that occurred and total number of "street light out" service requests reported within each Manhattan census tract in 2025.
+
 ```{r message = FALSE, echo = FALSE}
-#### Step 6: Interactive Map Visualizations
+# Step 6: Interactive Map Visualizations
 # --- A. 2025 Shooting Incident Points ---
 shooting25_sf <- merged_shooting_df |> 
   filter(created_year == 2025) |>
@@ -143,7 +144,10 @@ mapview(
 )
 ```
 
-##### Cumulative data: 2020 to 2025
+### Cumulative data: 2020 to 2025
+
+This map visualizes the total number of shooting incidents that occurred and total number of "street light out" service requests reported within each Manhattan census tract over the entire study period.
+
 ```{r message = FALSE, echo = FALSE}
 # Filter for 2020-2025
 shooting20_25_sf_hist <- merged_shooting_df |>
@@ -192,12 +196,14 @@ mapview(
 )
 ```
 
-# Part 2: Statistical analysis 
+# Part 2: Statistical analysis
 
-Model (Cross-sectional analysis): Poisson model
-Mode2 (Longitudinal analysis): GEE model
+This part models the association between the count of street lights out and the count of shooting incidents per Manhattan census tract using two methods: Poisson Regression (cross-sectional, 2025 only) and Generalized Estimating Equations (GEE) (longitudinal, 2020-2025).
 
 ### Cross-sectional analysis in 2025
+
+This analysis uses standard Poisson Regression to estimate the association between the number of street lights out and the number of shooting cases in each census tract for the year 2025.
+
 ```{r message = FALSE, echo = FALSE}
 # Calculate 2025 Shooting Counts Per Tract
 shootings_per_tract_25 <- 
@@ -235,6 +241,9 @@ exp(coef(poisson_model_2025))
 ```
 
 ### Longitudinal analysis during 2020 to 2025
+
+This analysis uses a Generalized Estimating Equation (GEE) Poisson Model to assess the association over multiple years (2020-2025).
+
 ```{r message = FALSE, echo = FALSE}
 all_geoids <- manhattan_pop |> st_drop_geometry() |> dplyr::select(GEOID)
 all_years <- tibble(created_year = 2020:2025)
@@ -300,7 +309,9 @@ summary(poisson_gee_model)
 exp(coef(poisson_gee_model))
 ```
 
-# Part 3: Stratified analysis to see if there is different association between shooting case happen in day time and night time
+# Part 3: Stratified analysis by day time and night time
+
+This section isolates shooting incidents into two distinct groups based on the time of day—DAY (Daytime) and NIGHT (Nighttime)—using the precise sunrise/sunset calculations performed in the preliminary data preparation. We then repeat the cross-sectional and longitudinal analyses for each group to see if the association with street lights out differs based on natural light conditions.
 
 ```{r message = FALSE, echo = FALSE}
 # Step 1: Prepare Daylight-Based Time Classification
@@ -320,7 +331,7 @@ shooting_data_DAY <- shooting_stratified |> filter(TIME_PERIOD == "DAY")
 shooting_data_NIGHT <- shooting_stratified |> filter(TIME_PERIOD == "NIGHT")
 ```
 
-### cross-sectional analysis in 2025
+### Cross-sectional analysis in 2025
 
 #### Day time
 ```{r message = FALSE, results='hide'}
