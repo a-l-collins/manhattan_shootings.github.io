@@ -10,13 +10,9 @@ navbar:
          
   right:
 
-    - text: "alissa"
-      href: 
-    - text: "Analysis of Fatal Shooting Outcomes in New York City"
-
     - text: "Location-based Patterns"
       href: alissa_location.html
-    - text: "Fatal Shooting Incidents"
+    - text: "Fatal Shooting Outcomes"
       href: Miho_Murder-flag.html
     - text: "Predictor 1: Green Space"
       href: Kino_Green_Space.html
