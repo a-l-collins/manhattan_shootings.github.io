@@ -9,8 +9,9 @@ output:
 
 # Introduction
 
-## Purpose and Data Sources for NYC Shooting Location Analysis
+<img src="./images/5borough.jpg" style="width:75%">
 
+## Purpose and Data Sources for NYC Shooting Location Analysis
 
 This project analyzes shooting incidents in New York City with a focus on geographic and location-based patterns. The analysis uses two NYPD datasets: the historic dataset covering incidents from 2015 through 2024, and the 2025 year-to-date dataset providing the most recent records. Together, these data allow examination of long-term patterns and current trends in shootings across boroughs and location types.
 
@@ -48,12 +49,14 @@ dat2 = read.csv("./Data folder/Shooting_2025.csv")
 
 dat1 = dat1 |>
   mutate(year = as.numeric(substr(OCCUR_DATE, nchar(OCCUR_DATE) - 3, nchar(OCCUR_DATE)))) |>
-  filter(year >= 2015)
+  filter(year >= 2015) |>
+  distinct(INCIDENT_KEY, .keep_all = TRUE) 
 
 dat_all = bind_rows(
   dat1 |> mutate(source = "historic"),
   dat2 |> mutate(source = "y2025")
-)
+)|>
+  distinct(INCIDENT_KEY, .keep_all = TRUE)
 ```
 
 
@@ -81,17 +84,17 @@ dat1 = dat1 |>
 dat_all_sf = dat_all |>
   filter(!is.na(Latitude) & !is.na(Longitude)) |>
   filter(Latitude != 0 & Longitude != 0) |>
-  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) 
 ```
 
 
 
 
-# 2. Descriptive Analysis
+# Descriptive Analysis
 
 This section presents descriptive summaries of shooting incidents across the five boroughs and by location type. It focuses on understanding basic patterns in counts and distributions before moving into spatial visualization and regression modeling.
 
-## 2a. Borough-Level Shooting Counts (2015-2024)
+## Borough-Level Shooting Counts (2015-2024)
 
 This subsection summarizes the total number of shooting incidents for each borough using the historic dataset from 2015 to 2024.
 
@@ -119,7 +122,7 @@ dat1_boro |>
 Brooklyn and the Bronx have the highest total shooting counts in this period, together accounting for the majority of incidents citywide. Queens and Manhattan show moderate levels, while Staten Island has the fewest shootings. This distribution reflects substantial variation in shooting activity across boroughs.
 
 
-## 2b. Borough-Level Shooting Counts (All Years Combined)
+## Borough-Level Shooting Counts (All Years Combined)
 
 This subsection presents shooting incident counts for each borough using the full dataset that includes all available years through 2025.
 
@@ -148,7 +151,7 @@ dat_all_boro |>
 The relative distribution of shootings across boroughs remains consistent when 2025 data is included. Brooklyn and the Bronx continue to have the highest incident counts, while Staten Island remains the lowest. The overall pattern is stable over time.
 
 
-## 2c. Location-Based Analysis (Inside vs Outside)
+## Location-Based Analysis (Inside vs Outside)
 
 This subsection examines the distribution of shooting incidents by location type (inside buildings versus outside) for the historic period.
 
@@ -177,7 +180,7 @@ dat1_location |>
 Among incidents with known location type, the majority of shootings occur outside. This pattern reflects the nature of street-level gun violence being more common than indoor incidents. However, it is important to note that a substantial number of incidents have unknown location data.
 
 
-## 2d. Location-Based Analysis (All Years Combined)
+## Location-Based Analysis (All Years Combined)
 
 This subsection presents the distribution of shooting incidents by location type using the full dataset.
 
@@ -206,7 +209,7 @@ dat_all_location |>
 The pattern of outside shootings exceeding inside shootings remains consistent when all years are included. Outside incidents continue to represent the majority of shootings with known location type.
 
 
-## 2e. Location-Based Analysis by Borough (All Years)
+## Location-Based Analysis by Borough (All Years)
 
 This subsection cross-tabulates shooting incidents by borough and location type for the full dataset.
 
@@ -238,11 +241,11 @@ dat_all_loc_boro |>
 All boroughs show more outside shootings than inside shootings among incidents with known location. The pattern holds across Brooklyn, Bronx, Queens, Manhattan, and Staten Island. Brooklyn and the Bronx have the highest counts for both location types.
 
 
-# 3. Geographic Visualization
+# Geographic Visualization
 
 This section presents interactive maps that visually display geographic differences in shooting incidents across boroughs. Each point represents an individual shooting incident.
 
-## 3a. Map of Total Shootings by Borough (All Years)
+## Map of Total Shootings by Borough (All Years)
 
 This map shows all shooting incidents from 2015 through 2025 as scatter points overlaid on borough boundaries.
 
@@ -288,7 +291,7 @@ mapview(
 Each red point represents an individual shooting incident from 2015 to 2025. The geographic concentration in Brooklyn and the Bronx is clearly visible, showing the spatial clustering of gun violence in these boroughs. The borough shading indicates total counts, while scatter points show the exact incident locations.
 
 
-## 3b. Map Comparing Inside vs Outside Shootings (All Years)
+## Map Comparing Inside vs Outside Shootings (All Years)
 
 This map displays both inside and outside shootings with different colors to compare their spatial distributions.
 
@@ -326,11 +329,11 @@ mapview(
 This comparison map shows inside shootings in blue and outside shootings in orange. The overlay reveals that both types of shootings cluster in similar geographic areas, suggesting that neighborhood-level factors influence both indoor and outdoor gun violence. Outside shootings (orange) are more numerous and create denser clusters. Use the layer controls to toggle each type on and off for comparison.
 
 
-# 4. Regression Analysis
+# Regression Analysis
 
 This section uses Poisson regression to model shooting counts aggregated by borough, location type, and victim race. This approach allows us to examine whether shooting frequency varies by location and demographic factors.
 
-## 4a. Poisson Regression Model
+## Poisson Regression Model
 
 A Poisson regression model was fit with shooting counts as the outcome, aggregated by borough, location type, and victim race.
 
@@ -409,7 +412,7 @@ rr_table |>
   kable_styling(full_width = FALSE, position = "center")
 ```
 
-## 4b. Interpretation and Epidemiological Insights
+## Interpretation and Epidemiological Insights
 
 The Poisson regression results provide insight into factors associated with shooting counts across New York City.
 
@@ -422,7 +425,7 @@ The Poisson regression results provide insight into factors associated with shoo
 **Limitations:** This analysis uses aggregated count data and cannot make individual-level inferences. The model assumes shooting counts follow a Poisson distribution, which may not account for overdispersion. Important confounders such as population density, socioeconomic factors, and policing patterns are not included.
 
 
-## 4c. Model Fit Statistics
+## Model Fit Statistics
 
 ```{r model-fit}
 glance(fit) |>
@@ -440,7 +443,7 @@ glance(fit) |>
 The reduction in deviance from the null model to the fitted model indicates that the predictors explain a meaningful portion of the variation in shooting counts. However, the residual deviance should be compared to the residual degrees of freedom to assess potential overdispersion.
 
 
-# 5. Conclusion
+# Conclusion
 
 This analysis examined NYPD shooting incident data with a focus on geographic and location-based patterns. Key findings include:
 
