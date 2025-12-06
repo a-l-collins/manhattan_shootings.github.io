@@ -9,7 +9,8 @@ navbar:
      href: full_report.html
          
   right:
-
+  - text: Analyses
+    menu:
     - text: "Location-based Patterns"
       href: alissa_location.html
     - text: "Fatal Shooting Outcomes"

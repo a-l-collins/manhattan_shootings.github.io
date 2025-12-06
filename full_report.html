@@ -13,7 +13,7 @@
 
 <title>Report: Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in Manhattan</title>
 
-<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
@@ -401,19 +401,58 @@ rates?</li>
 shooting rates?</li>
 <li>Does location influence shooting rates?</li>
 <li>Does victim gender influence shooting rates?</li>
-<li>Do these patterns change based on whether the shooting had been
-fatal?</li>
+<li>How do demographic characteristics and location patterns relate to
+the fatal shooting incidents?</li>
 </ol>
 </div>
 <div id="discussion" class="section level2">
 <h2><strong>Discussion</strong></h2>
-<div id="alissa-discussion" class="section level3">
-<h3><em>alissa discussion</em></h3>
-<p>[copy in discussion]</p>
+<div id="location-based-patterns-discussion" class="section level3">
+<h3><em>Location-based patterns discussion</em></h3>
+<p><img src="Images/location.jpg" style="width:75%"></p>
+<p>Across all five NYC boroughs, Brooklyn and the Bronx consistently
+show the highest shooting counts, together accounting for the majority
+of incidents citywide, while Staten Island has the fewest. When
+examining location type, whether shootings occur inside or outside, we
+observe that outside incidents outnumber inside incidents across all
+boroughs and time periods. This pattern suggests that street-level
+exposure may be a meaningful factor in shooting risk. The Poisson
+regression model confirms that shooting counts vary by location type,
+borough, and victim race. Inside locations show lower shooting rates
+compared to outside locations. Borough-level differences remain
+significant after adjusting for location type and victim demographics,
+with Brooklyn showing particularly elevated counts relative to the
+Bronx. However, this analysis uses aggregated count data and cannot make
+individual-level inferences. Important confounders such as population
+density, socioeconomic conditions, and policing patterns are not
+included in the model, and the Poisson distribution may not fully
+account for overdispersion in the data. When examining the interactive
+maps, both inside and outside shootings cluster in similar geographic
+areas within each borough, suggesting that neighborhood-level factors,
+rather than indoor/outdoor setting alone, drive the spatial
+concentration of gun violence. Overall, the finding highlights
+geographic and situational patterns rather than causal effects.</p>
 </div>
-<div id="miho-discussion" class="section level3">
-<h3><em>miho discussion</em></h3>
-<p>[copy in discussion]</p>
+<div id="fatal-shooting-discussion" class="section level3">
+<h3><em>Fatal shooting discussion</em></h3>
+<p>At the geographic level, fatality proportions were remarkably
+consistent across boroughs, ranging only from 0.18 to 0.21. This
+suggests that location does not strongly shape whether a shooting
+becomes fatal, even though total shooting counts differ widely across
+areas.</p>
+<p>At the individual level, the regression results show clearer
+differences. Younger victims have significantly lower odds of death,
+while older victims have higher odds. Race also showed meaningful
+variation, with Black and Other-race victims having lower odds of
+fatality compared with White victims. Although these results appear to
+contrast with widely documented patterns in firearm mortality, this
+discrepancy may reflect the fact that our analysis focuses exclusively
+on fatal shooting incidents. The dataset may include deaths such as
+suicides, which could shift the distribution of fatal outcomes and
+contribute to the higher odds observed among White victims. Victim sex
+did not influence fatality risk.</p>
+<p>Taken together, these findings indicate that fatal outcomes vary more
+by individual characteristics than by geography.</p>
 </div>
 <div id="green-space-discussion" class="section level3">
 <h3><em>Green space discussion</em></h3>
