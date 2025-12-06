@@ -17,7 +17,6 @@ library(sf)
 library(tigris)
 library(mapview)
 
-# add any other libraries used
 ```
 
 ### **Shooting Data**
@@ -32,8 +31,24 @@ Shooting data was downloaded from NYC Open Data, with two separate datasets for 
 
 The shooting data was available in a historical (2006-2024) format, and a 2025 format. We changed the `statistical_murder_flag` designations in the 2025 variant of the data to match the historical data before binding the two datasets together. We also ensured that each incident key within `incident_key` only occurred once to remove repeat inputs (to account for multiple victims or perpetrators) and prevent them from skewing the data. Both data sets of shooting incidents were filtered to exclude missing latitude/longitude, which are key variables in the predictors data sets.
 
-```{r}
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+dat1 = read.csv("./Data folder/Shooting_Historic.csv")
+dat2 = read.csv("./Data folder/Shooting_2025.csv")
 
+dat1 = dat1 |>
+  mutate(year = as.numeric(substr(OCCUR_DATE, nchar(OCCUR_DATE) - 3, nchar(OCCUR_DATE)))) |>
+  filter(year >= 2015) |>
+  distinct(INCIDENT_KEY, .keep_all = TRUE)  
+
+dat_all = bind_rows(
+  dat1 |> mutate(source = "historic"),
+  dat2 |> mutate(source = "y2025")
+) |>
+  distinct(INCIDENT_KEY, .keep_all = TRUE)
+dat_all_sf = dat_all |>
+  filter(!is.na(Latitude) & !is.na(Longitude)) |>
+  filter(Latitude != 0 & Longitude != 0) |>
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) 
 ```
 
 ##### *Focus on Manhattan*

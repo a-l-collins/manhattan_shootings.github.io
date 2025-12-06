@@ -380,9 +380,7 @@ library(httr)
 library(tidycensus)
 library(sf)
 library(tigris)
-library(mapview)
-
-# add any other libraries used</code></pre>
+library(mapview)</code></pre>
 </div>
 <div id="shooting-data" class="section level3">
 <h3><strong>Shooting Data</strong></h3>
@@ -416,6 +414,23 @@ remove repeat inputs (to account for multiple victims or perpetrators)
 and prevent them from skewing the data. Both data sets of shooting
 incidents were filtered to exclude missing latitude/longitude, which are
 key variables in the predictors data sets.</p>
+<pre class="r"><code>dat1 = read.csv(&quot;./Data folder/Shooting_Historic.csv&quot;)
+dat2 = read.csv(&quot;./Data folder/Shooting_2025.csv&quot;)
+
+dat1 = dat1 |&gt;
+  mutate(year = as.numeric(substr(OCCUR_DATE, nchar(OCCUR_DATE) - 3, nchar(OCCUR_DATE)))) |&gt;
+  filter(year &gt;= 2015) |&gt;
+  distinct(INCIDENT_KEY, .keep_all = TRUE)  
+
+dat_all = bind_rows(
+  dat1 |&gt; mutate(source = &quot;historic&quot;),
+  dat2 |&gt; mutate(source = &quot;y2025&quot;)
+) |&gt;
+  distinct(INCIDENT_KEY, .keep_all = TRUE)
+dat_all_sf = dat_all |&gt;
+  filter(!is.na(Latitude) &amp; !is.na(Longitude)) |&gt;
+  filter(Latitude != 0 &amp; Longitude != 0) |&gt;
+  st_as_sf(coords = c(&quot;Longitude&quot;, &quot;Latitude&quot;), crs = 4326) </code></pre>
 </div>
 <div id="focus-on-manhattan" class="section level5">
 <h5><em>Focus on Manhattan</em></h5>
