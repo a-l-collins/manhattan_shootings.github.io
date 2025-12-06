@@ -33,7 +33,6 @@ library(dplyr)
 
 ```{r eval=FALSE,message = FALSE, echo = FALSE}
 # Step2: Get an API Key
-# Note: You only need to do this once per device using install = TRUE.
 
 census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE) |> 
   invisible()
@@ -51,7 +50,6 @@ manhattan_pop <- get_acs(
 )|> 
   dplyr::select(GEOID, geometry)
 
-# Ensure consistent Coordinate Reference System (CRS)
 manhattan_pop <- st_transform(manhattan_pop, crs = 4326)
 ```
 
@@ -85,7 +83,6 @@ shooting06_24_df =
 # MERGE ALL SHOOTING DATA
 merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df) |>
   distinct(incident_key, .keep_all = TRUE) |>
-  # Add date/year columns for filtering
   mutate(
     date_obj = lubridate::mdy(occur_date), 
     created_year = lubridate::year(date_obj) 
@@ -106,7 +103,6 @@ street_light_data_all <-
     created_year = lubridate::year(date_obj)
   )
 
-# Convert all street light data to SF object for later use
 street_light_sf_all <- st_as_sf(
   street_light_data_all,
   coords = c("longitude", "latitude"),
@@ -295,7 +291,6 @@ shootings_per_year <- st_join(manhattan_pop, shooting20_25_sf) |>
 
 
 # --- CALCULATE ANNUAL BROKEN LIGHT COUNTS (2020-2025) ---
-# Street light data (street11_25_light_sf_hist) prepared in Part 1/Step 6
 lights_per_year <- st_join(manhattan_pop, street11_25_light_sf_hist) |>
   st_drop_geometry() |>
   filter(!is.na(descriptor)) |> 
@@ -324,7 +319,6 @@ poisson_gee_model <- geepack::geeglm(
   corstr = "unstructured" 
 )
 
-# Output Model Summary and Incidence Rate Ratios
 summary(poisson_gee_model)
 exp(coef(poisson_gee_model))
 ```
@@ -337,8 +331,6 @@ This section isolates shooting incidents into two distinct groups based on the t
 
 ```{r message = FALSE, echo = FALSE}
 # Step 1: Prepare Daylight-Based Time Classification
-# 1. Adapt the pre-calculated 'daylight_shooting' data
-# We also ensure it has the 'created_year' variable needed for filtering.
 shooting_stratified <- 
   read_csv("./Data Folder/Daylight_Shooting_Stratified.csv", na = c("NA", ".", ""))|>
   janitor::clean_names() |> 
@@ -348,7 +340,6 @@ shooting_stratified <-
     TIME_PERIOD = case_match(TIME_PERIOD, "Daytime" ~ "DAY", "Nighttime" ~ "NIGHT")
   )
 
-# 2. Separate into DAY/NIGHT data frames for filtering
 shooting_data_DAY <- shooting_stratified |> filter(TIME_PERIOD == "DAY")
 shooting_data_NIGHT <- shooting_stratified |> filter(TIME_PERIOD == "NIGHT")
 ```
