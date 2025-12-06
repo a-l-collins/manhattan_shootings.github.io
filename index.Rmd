@@ -14,15 +14,109 @@ Gun violence is a persistent public health crisis in the United States. In New Y
 
 ### **Map of Manhattan Shootings**
 
-Based on data from 2006-September 2025. Hover over each point to see [whatever it shows].
+```{r message = FALSE, echo = FALSE, warning = FALSE}
+# Step1: Downlaod the library
+# Note: install.packages(c("tidycensus", "tidyverse", "sf", "mapview", "geepack"))
 
-*map of shootings*
+library(tidyverse)
+library(tidycensus)
+library(sf)
+library(mapview)
+library(dplyr)
+```
+
+```{r eval=FALSE,message = FALSE, echo = FALSE}
+# Step2: Get an API Key
+# Note: You only need to do this once per device using install = TRUE.
+
+census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE)
+```
+
+```{r message = FALSE, echo = FALSE, results='hide'}
+# Step 3: Prepare census tract data
+# B01003_001 is Total Population (estimate). We need this column!
+manhattan_pop <- get_acs(
+ geography = "tract",
+ variables = "B01003_001",
+ state = "NY",
+ county = "061",
+ geometry = TRUE,
+ year = 2023
+)|>
+dplyr::select(GEOID, estimate, geometry)
+
+# Ensure consistent Coordinate Reference System (CRS)
+manhattan_pop <- st_transform(manhattan_pop, crs = 4326)
+```
+
+```{r message = FALSE, echo = FALSE}
+# Step 4: Load and Merge Shooting Data (Historical and Current)
+shooting25_df =
+  read_csv("./Data Folder/Shooting_2025.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN") |> 
+  drop_na(latitude, longitude, occur_date, occur_time) |>
+  # Standardize 'statistical_murder_flag' for eventual use
+  mutate(statistical_murder_flag = case_match(statistical_murder_flag,
+                                             "N" ~ FALSE,
+                                             "Y" ~ TRUE,
+                                             .default = NA))
+
+# Load Historical Data (2020-2024)
+shooting06_24_df = 
+  read_csv("./Data Folder/Shooting_Historic.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  distinct(incident_key, .keep_all = TRUE) |> 
+  filter(boro == "MANHATTAN",
+         !incident_key %in% c(279138121, 272105041)) |> 
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj)) |>
+  filter(created_year >= 2020 & created_year <= 2025) |> 
+  drop_na(latitude, longitude, occur_date, occur_time)
+
+# MERGE ALL SHOOTING DATA
+merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df) |>
+  distinct(incident_key, .keep_all = TRUE) |>
+  # Add date/year columns for filtering
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj) 
+  )
+
+# Step 6: Create Spatial Shooting Data (sf object)
+# Convert the merged shooting data frame to an sf object for mapping
+shooting20_25_sf <- merged_shooting_df |>
+ filter(created_year >= 2020 & created_year <= 2025) |>
+ st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+```
+
+```{r message = FALSE, echo = FALSE}
+# Step 7: Map Population Choropleth with Shooting Case Overlay
+
+# 1. Base Map: Manhattan Census Tracts colored by population size
+mapview(
+ manhattan_pop,
+ zcol = "estimate", # Color tracts based on the population size
+ legend = TRUE,
+ layer.name = "Total Population (2023 ACS)",
+ map.types = "CartoDB.Positron",
+ alpha.regions = 0.6
+) + mapview(
+ shooting20_25_sf,
+ col.regions = "red",
+ layer.name = "Shooting Incidents (2020-2025)"
+)
+```
+
+* Comment: This map shows the distribution of shooting incidents from 2020–2025 overlaid on census tracts shaded by total population from the 2023 ACS. Shooting incidents cluster primarily in densely populated areas of central and northern Manhattan, while tracts with lower population counts show fewer events.
 
 ### **Our Data Sources**
 
 #### *Main Data*
 
-Shooting data was downloaded from NYC Open Data, with two separate datasets for [2025 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data) and for [historical (2026-2024) data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data). When combined, the two datasets have a total of 3,103 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
+Shooting data was downloaded from NYC Open Data, with two separate datasets for [2025 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data) and for [historical (2006-2024) data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data). When combined, the two datasets have a total of 3,103 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
 
 #### *Other Sources*
 
@@ -41,8 +135,8 @@ Additional data was required in order to conduct the time analyses, street lamp 
 
 **Street Lamp**
 
-- Census Tract Boundaries through TidyCensus R package
-- [Street Lamp]() were used to identify reports of "street light out" service requests
+* Census Tract Boundaries through TidyCensus R package
+* [Street Lamp](https://data.cityofnewyork.us/Transportation/DOT-Street-Lights-and-Traffic-Signals-311-Service-/jwvp-gyiq) were used to identify reports of "street light out" service requests
 
 ### **The Team**
 

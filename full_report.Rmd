@@ -9,7 +9,7 @@ output:
 
 ## **Motivation**
 
-Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the (Midtown Manhattan mass shooting)[https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls] in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of socioeconomic, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
+Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the [Midtown Manhattan mass shooting](https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls) in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of neighborhood factors, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
 
 ## **Questions**
 
@@ -21,7 +21,7 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 1. How do the social/environmental conditions of each region influence shooting rates?
 1. Does location influence shooting rates?
 1. Does victim gender influence shooting rates?
-1. Do these patterns change based on whether the shooting had been fatal?
+1. How do demographic characteristics and location patterns relate to the fatal shooting incidents?
 
 ## **Discussion**
 
@@ -29,13 +29,21 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 
 [copy in discussion]
 
-### *miho discussion*
+### *Fatal shooting discussion*
 
-[copy in discussion]
+At the geographic level, fatality proportions were remarkably consistent across boroughs, ranging only from 0.18 to 0.21. This suggests that location does not strongly shape whether a shooting becomes fatal, even though total shooting counts differ widely across areas.
 
-### *kino discussion*
+At the individual level, the regression results show clearer differences. Younger victims have significantly lower odds of death, while older victims have higher odds. Race also showed meaningful variation, with Black and Other-race victims having lower odds of fatality compared with White victims. Although these results appear to contrast with widely documented patterns in firearm mortality, this discrepancy may reflect the fact that our analysis focuses exclusively on fatal shooting incidents. The dataset may include deaths such as suicides, which could shift the distribution of fatal outcomes and contribute to the higher odds observed among White victims. Victim sex did not influence fatality risk.
 
-[copy in discussion]
+Taken together, these findings indicate that fatal outcomes vary more by individual characteristics than by geography.
+
+### *Green space discussion*
+
+<img src="./Figures/park3.jpg" style="width:75%">
+
+For census tracts that contain park acreage, the highest densities of shootings per park acre were concentrated in Harlem and Upper Manhattan/West Harlem. When examining all census tracts—regardless of whether a park is present—we observe that Upper Manhattan, including Harlem and Inwood, experiences a higher number of shooting incidents relative to mid- and lower-Manhattan census tracts. Across all tracts, park acreage and the number of shooting incidents are positively correlated, suggesting that the presence of parks may be moderately associated with higher shooting counts. However, this pattern is likely influenced by substantial data limitations: many parks could not be successfully geocoded, and parks spanning multiple census tracts were not fully accounted for, leading to probable underestimation of the true relationship between green space and violence. This association may also reflect uncontrolled factors such as population density or tract size.
+
+When restricting the analysis to only census tracts with parks, the correlation between total park acreage and shootings per acre becomes negative, which is consistent with prior literature suggesting that green space may have a protective effect against gun violence. Still, this within-tract analysis is subject to selection bias and may overstate the magnitude of the association. Overall, our findings are descriptive and highlight spatial patterns rather than causal effects.
 
 ### *Unlit street lamps discussion*
 
