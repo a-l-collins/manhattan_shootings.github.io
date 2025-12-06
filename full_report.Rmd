@@ -25,9 +25,13 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 
 ## **Discussion**
 
-### *alissa discussion*
+### *Location-based patterns discussion*
 
-[copy in discussion]
+<img src="./images/location.jpg" style="width:75%">
+
+Across all five NYC boroughs, Brooklyn and the Bronx consistently show the highest shooting counts, together accounting for the majority of incidents citywide, while Staten Island has the fewest. When examining location type, whether shootings occur inside or outside, we observe that outside incidents outnumber inside incidents across all boroughs and time periods. This pattern suggests that street-level exposure may be a meaningful factor in shooting risk.
+The Poisson regression model confirms that shooting counts vary by location type, borough, and victim race. Inside locations show lower shooting rates compared to outside locations. Borough-level differences remain significant after adjusting for location type and victim demographics, with Brooklyn showing particularly elevated counts relative to the Bronx. However, this analysis uses aggregated count data and cannot make individual-level inferences. Important confounders such as population density, socioeconomic conditions, and policing patterns are not included in the model, and the Poisson distribution may not fully account for overdispersion in the data.
+When examining the interactive maps, both inside and outside shootings cluster in similar geographic areas within each borough, suggesting that neighborhood-level factors, rather than indoor/outdoor setting alone, drive the spatial concentration of gun violence. Overall, the finding highlights geographic and situational patterns rather than causal effects.
 
 ### *Fatal shooting discussion*
 
