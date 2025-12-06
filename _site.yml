@@ -21,8 +21,8 @@ navbar:
       href: Streetlamp_tehsuan.html
     - text: "Time Analysis"
       href: Ainsel_Weather.html
-    - icon: fa-github fa-lg
-      href: https://github.com/a-l-collins/manhattan_shootings.github.io.git
+  - icon: fa-github fa-lg
+    href: https://github.com/a-l-collins/manhattan_shootings.github.io.git
 
 output:
   html_document:
