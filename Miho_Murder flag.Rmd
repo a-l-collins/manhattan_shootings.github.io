@@ -364,7 +364,7 @@ or_table |>
 
 ## 4b. Interpretation & Epidemiological Insights
 
-The model indicates that age is strongly associated with fatality: younger victims have lower odds of death (OR = 0.67), while older victims have higher odds (OR = 1.47) compared with adults. Sex is not a significant predictor, with males and females showing similar odds of fatal outcomes (OR = 0.98). Race also shows significant differences: Black victims (OR = 0.72) and those categorized as Other (OR = 0.74) have lower odds of fatality than White victims. 
+The model indicates that age is strongly associated with fatality: younger victims have lower odds of death (OR = 0.67), while older victims have higher odds (OR = 1.47) compared with adults. Sex is not a significant predictor, with males and females showing similar odds of fatal outcomes (OR = 0.98). Race also shows significant differences: Black victims (OR = 0.72) and those categorized as Other (OR = 0.74) have lower odds of fatality than White victims. This pattern may seem unexpected because many studies show higher firearm mortality rates among Black individuals. However, the difference in our results likely reflects the characteristics of this dataset. The analysis includes only incidents that resulted in death, and it may also contain cases such as firearm suicides. Suicides occur more frequently among White individuals, and their inclusion could raise the fatality odds observed for White victims in this model.
 
 
 ```{r}
