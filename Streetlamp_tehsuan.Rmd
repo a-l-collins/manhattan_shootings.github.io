@@ -7,7 +7,7 @@ output:
     toc_float: true
 ---
 
-<img src="./Figures/pexels-muffin-1629998.jpg" style="width:80%">
+<img src="./Figures/pexels-muffin-1629998.jpg">
 
 This research is inspired by a simple, yet profound question: Does a lack of working street lights make neighborhoods less safe?
 
