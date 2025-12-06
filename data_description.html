@@ -550,7 +550,6 @@ as this is a key component of my green space analysis.</p>
     created_year = lubridate::year(date_obj)
   )
 
-# Convert all street light data to SF object for later use
 street_light_sf_all &lt;- st_as_sf(
   street_light_data_all,
   coords = c(&quot;longitude&quot;, &quot;latitude&quot;),
@@ -572,15 +571,13 @@ so they both match and are in a 24-hour format, and a
 <code>daylight</code> variable was created to indicate whether each
 individual shooting occurred within its date’s provided sunrise/sunset
 times or not.</p>
-<pre class="r"><code># Ran once to pull table from website:
-url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;
+<pre class="r"><code>url = &quot;https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html&quot;
 
 daylight &lt;- read_html(url) |&gt;  
   html_table() %&gt;% 
   as.data.frame() %&gt;% 
   janitor::clean_names()
 
-# write.table(daylight, file = &quot;./Data Folder/Daylight_Hours.txt&quot;, quote = F, row.names = F, col.names = T, sep = &quot;\t&quot;)
 
 daylight &lt;- read.table(&quot;./Data Folder/Daylight_Hours.txt&quot;, header = T, sep = &#39;\t&#39;) %&gt;% 
   rename(day = var_1) %&gt;% 
@@ -660,8 +657,7 @@ workbook from <a href="https://www.generalblue.com/calendar">General
 Blue</a>.</p>
 <p>The following functions were created in order to read all calendars
 into a single dataframe:</p>
-<pre class="r"><code>#&#39; Read in calendar
-#&#39;
+<pre class="r"><code>#&#39;
 #&#39; @param year Relevant sheet name
 #&#39; @param range Range for the relevant month
 #&#39;
@@ -696,7 +692,6 @@ read_calendar = function(year, month, range) {
   func_cal
 }
 
-#&#39; Create a yearly calendar
 #&#39;
 #&#39; @param year Relevant sheet name
 #&#39;
@@ -720,7 +715,6 @@ create_yearly_calendar = function(year) {
   )
 }
 
-#&#39; Create a calendar with all provided years
 #&#39;
 #&#39; @param year_list Relevant sheet names
 #&#39;
