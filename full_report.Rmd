@@ -21,7 +21,7 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 1. How do the social/environmental conditions of each region influence shooting rates?
 1. Does location influence shooting rates?
 1. Does victim gender influence shooting rates?
-1. Do these patterns change based on whether the shooting had been fatal?
+1. How do demographic characteristics and location patterns relate to the fatal shooting incidents?
 
 ## **Discussion**
 
@@ -29,9 +29,13 @@ Questions we had about patterns that can be found in Manhattan shootings were:
 
 [copy in discussion]
 
-### *miho discussion*
+### *Fatal shooting discussion*
 
-[copy in discussion]
+At the geographic level, fatality proportions were remarkably consistent across boroughs, ranging only from 0.18 to 0.21. This suggests that location does not strongly shape whether a shooting becomes fatal, even though total shooting counts differ widely across areas.
+
+At the individual level, the regression results show clearer differences. Younger victims have significantly lower odds of death, while older victims have higher odds. Race also showed meaningful variation, with Black and Other-race victims having lower odds of fatality compared with White victims. Although these results appear to contrast with widely documented patterns in firearm mortality, this discrepancy may reflect the fact that our analysis focuses exclusively on fatal shooting incidents. The dataset may include deaths such as suicides, which could shift the distribution of fatal outcomes and contribute to the higher odds observed among White victims. Victim sex did not influence fatality risk.
+
+Taken together, these findings indicate that fatal outcomes vary more by individual characteristics than by geography.
 
 ### *Green space discussion*
 
