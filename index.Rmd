@@ -1,5 +1,5 @@
 ---
-title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in Manhattan"
+title: "Unmasking Variables: A Descriptive Analysis of Gun Violence Correlates in New York City"
 output: 
   html_document:
     toc: true
@@ -10,7 +10,7 @@ output:
 
 ### **About**
 
-Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the [Midtown Manhattan mass shooting](https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls) in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. We set out to perform a descriptive exploration of neighborhood factors, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
+Gun violence is a persistent public health crisis in the United States. In New York City, for example, we had the [Midtown Manhattan mass shooting](https://www.cnn.com/2025/08/03/us/manhattan-shooting-timeline-911-calls) in July 2025. It showed us that even our busiest, most protected neighborhoods are impacted by gun violence. First, we  will like to analyze which borough has the highest shooting incidents in New York City. Second, we will focus on in Manhattan, NYC, which our campus is located on. We set out to perform a descriptive exploration of neighborhood factors, geographic, and temporal factors that are potentially positively or negatively associated with firearm shootings in Manhattan, NYC.
 
 ### **Map of Manhattan Shootings**
 
