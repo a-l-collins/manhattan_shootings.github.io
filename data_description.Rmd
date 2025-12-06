@@ -164,7 +164,6 @@ street_light_data_all <-
     created_year = lubridate::year(date_obj)
   )
 
-# Convert all street light data to SF object for later use
 street_light_sf_all <- st_as_sf(
   street_light_data_all,
   coords = c("longitude", "latitude"),
@@ -179,7 +178,6 @@ street_light_sf_all <- st_as_sf(
 Data on when sunrise and sunset occurs for each day of the year was pulled from [New York City Photo Safari](https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html). It was scraped from the website a single time before being saved in a table, and that table was used for subsequent analysis. This data was then cleaned, merged with the shooting data created above, the sunrise/sunset/time variables cleaned so they both match and are in a 24-hour format, and a `daylight` variable was created to indicate whether each individual shooting occurred within its date's provided sunrise/sunset times or not.
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
-# Ran once to pull table from website:
 url = "https://newyorkcityphotosafari.com/blog/sunrise-sunset-times-in-nyc.html"
 
 daylight <- read_html(url) |>  
@@ -187,7 +185,6 @@ daylight <- read_html(url) |>
   as.data.frame() %>% 
   janitor::clean_names()
 
-# write.table(daylight, file = "./Data Folder/Daylight_Hours.txt", quote = F, row.names = F, col.names = T, sep = "\t")
 
 daylight <- read.table("./Data Folder/Daylight_Hours.txt", header = T, sep = '\t') %>% 
   rename(day = var_1) %>% 
@@ -268,7 +265,6 @@ Calendars for 2006-2025 were downloaded and added to a single excel workbook fro
 The following functions were created in order to read all calendars into a single dataframe:
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
-#' Read in calendar
 #'
 #' @param year Relevant sheet name
 #' @param range Range for the relevant month
@@ -304,7 +300,6 @@ read_calendar = function(year, month, range) {
   func_cal
 }
 
-#' Create a yearly calendar
 #'
 #' @param year Relevant sheet name
 #'
@@ -328,7 +323,6 @@ create_yearly_calendar = function(year) {
   )
 }
 
-#' Create a calendar with all provided years
 #'
 #' @param year_list Relevant sheet names
 #'
