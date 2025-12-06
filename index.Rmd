@@ -27,7 +27,6 @@ library(dplyr)
 
 ```{r eval=FALSE,message = FALSE, echo = FALSE}
 # Step2: Get an API Key
-# Note: You only need to do this once per device using install = TRUE.
 
 census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwrite=TRUE) |> 
   invisible()
@@ -35,7 +34,6 @@ census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", install = TRUE,overwr
 
 ```{r message = FALSE, echo = FALSE, results='hide'}
 # Step 3: Prepare census tract data
-# B01003_001 is Total Population (estimate). We need this column!
 manhattan_pop <- get_acs(
  geography = "tract",
  variables = "B01003_001",
@@ -46,7 +44,6 @@ manhattan_pop <- get_acs(
 )|>
 dplyr::select(GEOID, estimate, geometry)
 
-# Ensure consistent Coordinate Reference System (CRS)
 manhattan_pop <- st_transform(manhattan_pop, crs = 4326)
 ```
 
@@ -58,7 +55,6 @@ shooting25_df =
   distinct(incident_key, .keep_all = TRUE) |> 
   filter(boro == "MANHATTAN") |> 
   drop_na(latitude, longitude, occur_date, occur_time) |>
-  # Standardize 'statistical_murder_flag' for eventual use
   mutate(statistical_murder_flag = case_match(statistical_murder_flag,
                                              "N" ~ FALSE,
                                              "Y" ~ TRUE,
@@ -80,26 +76,21 @@ shooting06_24_df =
 # MERGE ALL SHOOTING DATA
 merged_shooting_df <- bind_rows(shooting25_df, shooting06_24_df) |>
   distinct(incident_key, .keep_all = TRUE) |>
-  # Add date/year columns for filtering
   mutate(
     date_obj = lubridate::mdy(occur_date), 
     created_year = lubridate::year(date_obj) 
   )
 
-# Step 6: Create Spatial Shooting Data (sf object)
-# Convert the merged shooting data frame to an sf object for mapping
+# Step 6: Create Spatial Shooting Data
 shooting20_25_sf <- merged_shooting_df |>
  filter(created_year >= 2020 & created_year <= 2025) |>
  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
 ```
 
 ```{r message = FALSE, echo = FALSE}
-# Step 7: Map Population Choropleth with Shooting Case Overlay
-
-# 1. Base Map: Manhattan Census Tracts colored by population size
 mapview(
  manhattan_pop,
- zcol = "estimate", # Color tracts based on the population size
+ zcol = "estimate",
  legend = TRUE,
  layer.name = "Total Population (2023 ACS)",
  map.types = "CartoDB.Positron",
