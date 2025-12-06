@@ -19,7 +19,7 @@ By looking at crime that happens during the day compared to crime that happens a
 
 **Note: The street lamp data used for this analysis is restricted to the years 2020 through 2025 due to data storage and management requirements.**
 
-# Part 1: Interactive map visualizations
+# Interactive map visualizations
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
 # Step1: Downlaod the library
 # Note: install.packages(c("tidycensus", "tidyverse", "sf", "mapview", "geepack"))
@@ -214,7 +214,7 @@ mapview(
 
 * Comment: Figure presents the cumulative number of unlit street lights across Manhattan census tracts from 2020–2025 and the spatial distribution of cumulative shooting incidents during the same period. Higher counts of unlit lights were concentrated in northern Manhattan, particularly in Harlem and Washington Heights, while Midtown and parts of Lower Manhattan showed relatively fewer. Shooting incidents were widespread but exhibited dense clustering in central and northern Manhattan. Notably, several areas with high cumulative shooting activity overlapped with tracts that had elevated counts of unlit lights. This spatial correspondence suggests that neighborhoods with persistently poorer lighting conditions may also experience higher long-term shooting incidence, underscoring the need for further statistical evaluation.
 
-# Part 2: Statistical analysis
+# Statistical analysis
 
 This part models the association between the count of street lights out and the count of shooting incidents per Manhattan census tract using two methods: Poisson Regression (cross-sectional, 2025 only) and Generalized Estimating Equations (GEE) (longitudinal, 2020-2025).
 
@@ -331,7 +331,7 @@ exp(coef(poisson_gee_model))
 
 * Interpretation: The estimated incidence rate ratio was 1.012 (p = 0.008), indicating that each additional unlit street light in a census tract is associated with a 1.2% increase in the shooting rate.
 
-# Part 3: Stratified analysis by day time and night time
+# Stratified analysis by day time and night time
 
 This section isolates shooting incidents into two distinct groups based on the time of day—DAY (Daytime) and NIGHT (Nighttime)—using the precise sunrise/sunset calculations performed in the preliminary data preparation. We then repeat the cross-sectional and longitudinal analyses for each group to see if the association with street lights out differs based on natural light conditions.
 
