@@ -24,31 +24,40 @@ library(mapview)
 
 #### *The Data*
 
-Shooting data was downloaded from NYC Open Data, with two separate datasets for [2025 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data) and for [historical (2026-2024) data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data). When combined, the two datasets have a total of 3,103 independent observations across 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
+Shooting data was downloaded from NYC Open Data, with two separate datasets for [2025 data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Year-To-Date-/5ucz-vwe8/about_data) and for [historical (2026-2024) data](https://data.cityofnewyork.us/Public-Safety/NYPD-Shooting-Incident-Data-Historic-/833y-fsy8/about_data). The combined dataset provides 14,413 total independent observations across all boroughs. For factor study, which focuses exclusively on Manhattan, the relevant subset contains 3,103 independent observations across the 24 variables. These variables include information such as the age/gender/race of the perpetrator, the age/gender/race of the victim, the day on which the shooting took place, the time at which it took place, its general location (whether or not it was indoors, whether or not it took place within an apartment), and whether or not it was a fatal shooting.
 
 #### *Cleaning the Data*
+
+##### *Focus on borough*
+
+The shooting data was available in a historical (2006-2024) format, and a 2025 format. We changed the `statistical_murder_flag` designations in the 2025 variant of the data to match the historical data before binding the two datasets together. We also ensured that each incident key within `incident_key` only occurred once to remove repeat inputs (to account for multiple victims or perpetrators) and prevent them from skewing the data. Both data sets of shooting incidents were filtered to exclude missing latitude/longitude, which are key variables in the predictors data sets.
+
+```{r}
+
+```
+
+##### *Focus on Manhattan*
 
 The shooting data was available in a historical (2006-2024) format, and a 2025 format. We changed the `statistical_murder_flag` designations in the 2025 variant of the data to match the historical data before binding the two datasets together. We also made sure to only include Manhattan incidents, and ensured that each incident key within `incident_key` only occurred once, to remove repeat inputs (to account for multiple victims or perpetrators) and prevent them from skewing the data. Both data sets of shooting incidents were filtered to exclude missing latitude/longitude, which are key variables in the predictors data sets. After mapping, `incident_key` = 279138121 and 272105041 from `shooting06_24_df` were excluded because their latitudes/longitudes don't match with the Manhattan borough.
 
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
-# THIS IS BASED ON AINSEL'S PROCESS. Look it over and see if your process agrees; if it doesn't, text or something so we can work it out
-shooting_h <- read_csv("./Data Folder/Shooting_Historic.csv") %>% 
+shooting_h <- read_csv("./Data Folder/Shooting_Historic.csv")  |>  
   janitor::clean_names()
 
-shooting_2025 <- read_csv("./Data Folder/Shooting_2025.csv") %>% 
-  janitor::clean_names() %>% 
+shooting_2025 <- read_csv("./Data Folder/Shooting_2025.csv")  |>  
+  janitor::clean_names()  |>  
   mutate(statistical_murder_flag = case_match(statistical_murder_flag,
                                              "N" ~ FALSE,
                                              "Y" ~ TRUE))
 
-shooting <- bind_rows(shooting_2025, shooting_h) %>% 
-  separate_wider_delim(occur_date, delim = "/", names_sep = ".") %>% 
+shooting <- bind_rows(shooting_2025, shooting_h) |>  
+  separate_wider_delim(occur_date, delim = "/", names_sep = ".") |>  
   rename(
     month = occur_date.1,
     day = occur_date.2,
     year = occur_date.3,
     time = occur_time
-  ) %>% 
+  ) |> 
   mutate(
     month = case_match(month,
       "01" ~ "January",
@@ -64,11 +73,88 @@ shooting <- bind_rows(shooting_2025, shooting_h) %>%
       "11" ~ "November",
       "12" ~ "December"),
     day = as.numeric(day),
-    year = as.numeric(year)) %>% 
-  distinct(incident_key, .keep_all = TRUE) %>% 
+    year = as.numeric(year)) |>  
+  distinct(incident_key, .keep_all = TRUE) |>  
   filter(boro == "MANHATTAN",
          !incident_key %in% c(279138121, 272105041)) |> 
   drop_na(latitude)
+```
+
+### **Manhattan Census Tract Data**
+
+Census tract boundaries were obtained from the U.S. Census Bureau using the TidyCensus R package. These tract boundaries allowed us to map green space locations and street lamp locations to the correct census tract while ensuring accurate spatial alignment with our shooting incidents data.
+
+```{r, warning = FALSE, eval = FALSE, message=FALSE, echo=FALSE}
+### Census data API key
+
+census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", 
+               install = TRUE, overwrite = TRUE) |> 
+  invisible()
+```
+
+```{r, message = FALSE, warning = FALSE, eval = FALSE, results='hide'}
+### Load Manhattan ACS population data
+
+# Download Manhattan population data with geometry
+manhattan_pop <- get_acs(
+  geography = "tract",
+  variables = "B01003_001",
+  state = "NY",
+  county = "061", 
+  geometry = TRUE,
+  year = 2023
+)
+
+###  `county = "061"` indicates Manhattan
+### `variables = "B01003_001"` indicates that we are requesting the total population estimate for each census tract from the ACS 5-year survey. This variable provides a count of all residents each census tract, which is useful for mapping population distribution and describing spatial relationships with parks and shooting incidents.
+```
+
+### **Park Data**
+
+`parks_df` identifies property managed partially or solely by [NYC Parks](https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data). We dropped the `NAs` of parks without addresses, as this is a key component of my green space analysis.
+
+```{r, message = FALSE, warning = FALSE, eval = FALSE}
+parks_df =
+  read_csv("Data Folder/Parks_Properties_Oct2025.csv", na = c("NA", ".", "")) |> 
+  janitor::clean_names() |> 
+  select(acquisitiondate, borough, zipcode, address, 
+         eapply, location, acres, typecategory, retired) |> 
+  rename(boro = borough) |> 
+  drop_na(address) |> 
+   mutate(
+      boro = case_when(
+      boro == "B" ~ "Brooklyn",
+      boro == "M" ~ "Manhattan",
+      boro == "Q" ~ "Queens",
+      boro == "R" ~ "Staten Island",
+      boro == "X" ~ "Bronx",
+      TRUE ~ NA_character_
+    ),
+  address = paste(address, "New York, NY", sep = ", ")
+  ) |>
+  filter(boro == "Manhattan") 
+```
+
+### **Street Lamp Data**
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+street_light_data_all <-
+  read_csv("./Data Folder/street_light_redu.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |> 
+  filter(city == "MANHATTAN") |> 
+  filter(descriptor == "Street Light Out") |>
+  drop_na(latitude, longitude, created_date) |>
+  filter(latitude != 0, longitude != 0) |>
+  mutate(
+    date_obj = lubridate::dmy_hms(created_date), 
+    created_year = lubridate::year(date_obj)
+  )
+
+# Convert all street light data to SF object for later use
+street_light_sf_all <- st_as_sf(
+  street_light_data_all,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+)
 ```
 
 ### **Time Data**
@@ -365,62 +451,3 @@ pandemic_shooting <- left_join(weather, shooting, by = c("month", "day", "year")
                        12 ~ "December")
     )
 ```
-
-### **Park Data**
-
-`parks_df` identifies property managed partially or solely by [NYC Parks](https://data.cityofnewyork.us/Recreation/Parks-Properties/enfh-gkve/about_data). We dropped the `NAs` of parks without addresses, as this is a key component of my green space analysis.
-
-```{r, message = FALSE, warning = FALSE, eval = FALSE}
-parks_df =
-  read_csv("Data Folder/Parks_Properties_Oct2025.csv", na = c("NA", ".", "")) |> 
-  janitor::clean_names() |> 
-  select(acquisitiondate, borough, zipcode, address, 
-         eapply, location, acres, typecategory, retired) |> 
-  rename(boro = borough) |> 
-  drop_na(address) |> 
-   mutate(
-      boro = case_when(
-      boro == "B" ~ "Brooklyn",
-      boro == "M" ~ "Manhattan",
-      boro == "Q" ~ "Queens",
-      boro == "R" ~ "Staten Island",
-      boro == "X" ~ "Bronx",
-      TRUE ~ NA_character_
-    ),
-  address = paste(address, "New York, NY", sep = ", ")
-  ) |>
-  filter(boro == "Manhattan") 
-```
-
-### **Manhattan Census Tract Data**
-
-Census tract boundaries were obtained from the U.S. Census Bureau using the TidyCensus R package. These tract boundaries allowed us to map green space locations and street lamp locations to the correct census tract while ensuring accurate spatial alignment with our shooting incidents data.
-
-```{r, warning = FALSE, eval = FALSE, message=FALSE, echo=FALSE}
-### Census data API key
-
-census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63", 
-               install = TRUE, overwrite = TRUE) |> 
-  invisible()
-```
-
-```{r, message = FALSE, warning = FALSE, eval = FALSE, results='hide'}
-### Load Manhattan ACS population data
-
-# Download Manhattan population data with geometry
-manhattan_pop <- get_acs(
-  geography = "tract",
-  variables = "B01003_001",
-  state = "NY",
-  county = "061", 
-  geometry = TRUE,
-  year = 2023
-)
-
-###  `county = "061"` indicates Manhattan
-### `variables = "B01003_001"` indicates that we are requesting the total population estimate for each census tract from the ACS 5-year survey. This variable provides a count of all residents each census tract, which is useful for mapping population distribution and describing spatial relationships with parks and shooting incidents.
-```
-
-
-
-### if anyone else used any other data, add your sections in here as well
