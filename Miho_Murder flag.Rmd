@@ -61,6 +61,15 @@ This section presents descriptive summaries of fatal shooting incidents across t
 ## 2a. Borough-Level Analysis (2006–2024)
 This subsection summarizes the number of fatal shootings, the total number of shooting incidents, and the resulting proportion of fatal outcomes for each borough using the historic dataset from 2006 to 2024. It provides a clear comparison of how often shootings have resulted in death across boroughs over the long term.
 
+```{r create-spatial-points}
+dat_all_sf = dat_all |>
+  distinct(INCIDENT_KEY, .keep_all = TRUE) |>
+  filter(!is.na(Latitude) & !is.na(Longitude)) |>
+  filter(Latitude != 0 & Longitude != 0) |>
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+```
+
 ```{r}
 dat1_boro = dat1 |>
   group_by(BORO) |>
