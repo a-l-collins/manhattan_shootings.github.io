@@ -1,6 +1,5 @@
 ---
 title: "Geographic and Location-Based Patterns of Shooting Incidents in NYC"
-author: "Alissa Shams Orchi"
 output:
   html_document:
     toc: true
@@ -46,7 +45,7 @@ census_api_key("959ba8ec2ff8f8bf41e4cafecc6ec9727219fe63",
 dat1 = read.csv("./Data folder/Shooting_Historic.csv")
 dat2 = read.csv("./Data folder/Shooting_2025.csv")
 
-# Filter historic data to 2015 onwards
+
 dat1 = dat1 |>
   mutate(year = as.numeric(substr(OCCUR_DATE, nchar(OCCUR_DATE) - 3, nchar(OCCUR_DATE)))) |>
   filter(year >= 2015)
