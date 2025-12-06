@@ -49,7 +49,8 @@ dat2 = read.csv("./Data folder/Shooting_2025.csv")
 
 dat1 = dat1 |>
   mutate(year = as.numeric(substr(OCCUR_DATE, nchar(OCCUR_DATE) - 3, nchar(OCCUR_DATE)))) |>
-  filter(year >= 2015)
+  filter(year >= 2015) |>
+  distinct(INCIDENT_KEY, .keep_all = TRUE) 
 
 dat_all = bind_rows(
   dat1 |> mutate(source = "historic"),

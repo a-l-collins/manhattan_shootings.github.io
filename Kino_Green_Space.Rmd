@@ -73,6 +73,9 @@ shooting06_24_df =
   read_csv("Data Folder/Shooting_Historic.csv", na = c("NA", ".", "")) |>
   janitor::clean_names() |> 
   distinct(incident_key, .keep_all = TRUE) |> 
+  mutate(
+    date_obj = lubridate::mdy(occur_date), 
+    created_year = lubridate::year(date_obj))|> 
   filter(boro == "MANHATTAN",
          !incident_key %in% c(279138121, 272105041)) |> 
   drop_na(latitude)
